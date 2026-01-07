@@ -1,0 +1,26 @@
+#commentaires en FR
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: calendar
+      POSTGRES_USER: devops
+      POSTGRES_PASSWORD: devops123
+    ports: ["5432:5432"]
+    volumes: ['./data:/var/lib/postgresql/data']
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devops -d calendar"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+  
+  backend:
+    build: ./app
+    ports: ["8000:8000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://devops:devops123@postgres:5432/calendar
+    volumes:
+      - ./static:/static:ro
