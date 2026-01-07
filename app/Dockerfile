@@ -5,4 +5,5 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -q -r requirements.txt
 COPY . .
 EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Ajout des logs détaillés et des access logs pour faciliter le debug
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--access-log", "--log-level", "debug"]

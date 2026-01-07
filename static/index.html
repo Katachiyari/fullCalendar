@@ -95,8 +95,21 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label for="rrule" class="form-label">Récurrence (RRULE)</label>
-                                <input type="text" class="form-control" id="rrule" placeholder="FREQ=WEEKLY;BYDAY=MO" />
+                                <label for="rrule" class="form-label">Récurrence</label>
+                                <select class="form-select" id="rrule">
+                                    <option value="">Aucune</option>
+                                    <option value="FREQ=DAILY">Tous les jours</option>
+                                    <option value="FREQ=WEEKLY">Toutes les semaines</option>
+                                    <option value="FREQ=WEEKLY;BYDAY=MO">Tous les lundis</option>
+                                    <option value="FREQ=WEEKLY;BYDAY=TU">Tous les mardis</option>
+                                    <option value="FREQ=WEEKLY;BYDAY=WE">Tous les mercredis</option>
+                                    <option value="FREQ=WEEKLY;BYDAY=TH">Tous les jeudis</option>
+                                    <option value="FREQ=WEEKLY;BYDAY=FR">Tous les vendredis</option>
+                                    <option value="FREQ=WEEKLY;BYDAY=MO,WE,FR">Lun/Mer/Ven</option>
+                                    <option value="FREQ=WEEKLY;BYDAY=TU,TH">Mar/Jeu</option>
+                                    <option value="FREQ=MONTHLY">Tous les mois</option>
+                                    <option value="FREQ=YEARLY">Tous les ans</option>
+                                </select>
                             </div>
 
                             <div class="col-md-4 form-check mt-4">
