@@ -2,9 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
-from database import engine
-from models import Base
-from routers import events
+from app.database import engine
+from app.models import Base, User, Event  # Import models
+from app.routers import events, users, auth
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,10 +24,12 @@ app.add_middleware(
 )
 
 # Servir les fichiers statiques
-app.mount("/static", StaticFiles(directory="/static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Inclure les routers
+app.include_router(auth.router)
 app.include_router(events.router)
+app.include_router(users.router)
 
 @app.get("/")
 def root():

@@ -1,6 +1,7 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime, timedelta
+from datetime import date as date_type
 
 class EventBase(BaseModel):
     title: str
@@ -29,7 +30,12 @@ class EventBase(BaseModel):
                     # Enlever la timezone pour comparaison cohérente
                     start_dt = start_dt.replace(tzinfo=None)
                 else:
-                    start_dt = datetime.fromisoformat(v)
+                    # Accepter aussi le format date-only (YYYY-MM-DD) pour les événements all-day
+                    if len(v) == 10:
+                        d = date_type.fromisoformat(v)
+                        start_dt = datetime(d.year, d.month, d.day)
+                    else:
+                        start_dt = datetime.fromisoformat(v)
             else:
                 start_dt = v if isinstance(v, datetime) else datetime.fromisoformat(str(v))
                 if start_dt.tzinfo:
@@ -39,8 +45,8 @@ class EventBase(BaseModel):
             now = datetime.utcnow()
             min_start = now + timedelta(minutes=15)
             
-            if start_dt < min_start:
-                raise ValueError('La date doit être au minimum dans 15 minutes')
+            # if start_dt < min_start:
+            #    raise ValueError('La date doit être au minimum dans 15 minutes')
         except ValueError as e:
             if 'La date doit être' in str(e):
                 raise
@@ -48,6 +54,7 @@ class EventBase(BaseModel):
         return v
 
 class EventCreate(EventBase):
+    # owner_id sera ajouté automatiquement par le endpoint
     pass
 
 class EventUpdate(BaseModel):
@@ -73,7 +80,11 @@ class EventUpdate(BaseModel):
                     start_dt = datetime.fromisoformat(v_clean)
                     start_dt = start_dt.replace(tzinfo=None)
                 else:
-                    start_dt = datetime.fromisoformat(v)
+                    if len(v) == 10:
+                        d = date_type.fromisoformat(v)
+                        start_dt = datetime(d.year, d.month, d.day)
+                    else:
+                        start_dt = datetime.fromisoformat(v)
             else:
                 start_dt = v if isinstance(v, datetime) else datetime.fromisoformat(str(v))
                 if start_dt.tzinfo:
@@ -90,6 +101,7 @@ class EventUpdate(BaseModel):
 
 class Event(EventBase):
     id: str
+    owner_id: str
     created_at: datetime
 
     class Config:

@@ -1,364 +1,750 @@
 <!DOCTYPE html>
 <html lang="fr">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>DevOps Calendar</title>
-        <!-- Bootstrap 5.3 -->
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
-            crossorigin="anonymous"
-        />
-
-        <!-- FullCalendar v6 (JS global builds) -->
-        <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.17/index.global.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.17/index.global.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.17/index.global.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.17/index.global.min.js"></script>
-
-        <style>
-            html,
-            body {
-                height: 100%;
-            }
-            body {
-                display: flex;
-                flex-direction: column;
-            }
-            #calendar {
-                flex: 1;
-            }
-        </style>
-    </head>
-    <body class="bg-body-tertiary">
-        <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
-            <div class="container-fluid">
-                <span class="navbar-brand">DevOps Calendar</span>
-                <div class="text-light small d-none d-md-block">
-                    Backend: <code>http://localhost:8000</code>
-                </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendrier - Gestion d'Événements</title>
+    
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <!-- Flatpickr (date/time picker moderne) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- FullCalendar -->
+    <!-- Note: FullCalendar v6 bundles styles in the JS by default for standard bundles -->
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        nav.navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .main-container {
+            padding: 2rem 0;
+        }
+        
+        .calendar-wrapper {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 2rem;
+        }
+        
+        #calendar {
+            font-size: 0.95rem;
+        }
+        
+        .fc .fc-button-primary {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+        
+        .fc .fc-button-primary:hover {
+            background-color: #764ba2;
+            border-color: #764ba2;
+        }
+        
+        .fc .fc-button-primary.fc-button-active {
+            background-color: #764ba2;
+            border-color: #764ba2;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .event-item {
+            padding: 1rem;
+            border-left: 4px solid #667eea;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            background: #f5f7fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .event-item:hover {
+            background: #e8ecf1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .event-item.moderator-event {
+            border-left-color: #f0ad4e;
+        }
+        
+        .event-item.user-event {
+            border-left-color: #5cb85c;
+        }
+        
+        .event-item.admin-event {
+            border-left-color: #d9534f;
+        }
+        
+        .event-time {
+            font-size: 0.85rem;
+            color: #7a8fa3;
+            margin-bottom: 0.5rem;
+        }
+        
+        .welcome-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .welcome-box h2 {
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        
+        .welcome-box p {
+            color: rgba(255, 255, 255, 0.9);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar sera injectée ici par le JS -->
+    
+    <div class="main-container">
+        <div class="container">
+            <!-- Message de bienvenue -->
+            <div class="welcome-box">
+                <h2 class="title is-4" style="color: white;">
+                    <span class="icon"><i class="fas fa-calendar-check"></i></span>
+                    <span>Bienvenue sur votre calendrier</span>
+                </h2>
+                <p id="welcome-message">Chargement...</p>
             </div>
-        </nav>
 
-        <main class="container py-3">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card shadow-sm">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <span class="fw-semibold">Planning</span>
-                            <div class="d-flex gap-2">
-                                <button id="openCreateModal" class="btn btn-primary btn-sm" type="button">
-                                    Nouvel évènement
-                                </button>
-                                <button id="refreshBtn" class="btn btn-outline-secondary btn-sm" type="button">
-                                    Actualiser
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body p-0">
-                            <div id="calendar"></div>
-                        </div>
+            <div class="columns">
+                <!-- Calendrier principal -->
+                <div class="column is-9">
+                    <div class="calendar-wrapper">
+                        <div id="calendar"></div>
                     </div>
                 </div>
-            </div>
-        </main>
 
-        <!-- Modal Création d'évènement -->
-        <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="eventModalLabel">Créer un évènement</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <!-- Sidebar avec événements -->
+                <div class="column is-3">
+                    <div class="sidebar">
+                        <h3 class="title is-5">
+                            <span class="icon"><i class="fas fa-list-ul"></i></span>
+                            <span>Prochains Événements</span>
+                        </h3>
+                        <div id="events-list">
+                            <p class="has-text-grey">Chargement...</p>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        <form id="eventForm" class="row g-3">
-                            <div class="col-12">
-                                <label for="title" class="form-label">Titre</label>
-                                <input type="text" class="form-control" id="title" placeholder="Ex: Déploiement prod" required />
-                            </div>
 
-                            <div class="col-md-6">
-                                <label for="start" class="form-label">Début</label>
-                                <input type="datetime-local" class="form-control" id="start" required />
-                            </div>
-                            <div class="col-md-6">
-                                <label for="end" class="form-label">Fin</label>
-                                <input type="datetime-local" class="form-control" id="end" />
-                            </div>
-
-                            <div class="col-md-4">
-                                <label for="color" class="form-label">Couleur</label>
-                                <input type="color" class="form-control form-control-color" id="color" value="#28a745" />
-                            </div>
-
-                            <div class="col-md-4">
-                                <label for="rrule" class="form-label">Récurrence</label>
-                                <select class="form-select" id="rrule">
-                                    <option value="">Aucune</option>
-                                    <option value="FREQ=DAILY">Tous les jours</option>
-                                    <option value="FREQ=WEEKLY">Toutes les semaines</option>
-                                    <option value="FREQ=WEEKLY;BYDAY=MO">Tous les lundis</option>
-                                    <option value="FREQ=WEEKLY;BYDAY=TU">Tous les mardis</option>
-                                    <option value="FREQ=WEEKLY;BYDAY=WE">Tous les mercredis</option>
-                                    <option value="FREQ=WEEKLY;BYDAY=TH">Tous les jeudis</option>
-                                    <option value="FREQ=WEEKLY;BYDAY=FR">Tous les vendredis</option>
-                                    <option value="FREQ=WEEKLY;BYDAY=MO,WE,FR">Lun/Mer/Ven</option>
-                                    <option value="FREQ=WEEKLY;BYDAY=TU,TH">Mar/Jeu</option>
-                                    <option value="FREQ=MONTHLY">Tous les mois</option>
-                                    <option value="FREQ=YEARLY">Tous les ans</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-4 form-check mt-4">
-                                <input class="form-check-input" type="checkbox" id="all_day" />
-                                <label class="form-check-label" for="all_day">Journée entière</label>
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label">Ressources</label>
-                                <div class="row g-2" id="resourcesContainer">
-                                    <div class="col-auto form-check">
-                                        <input class="form-check-input" type="checkbox" value="pod-01" id="res-pod-01" />
-                                        <label class="form-check-label" for="res-pod-01">pod-01</label>
-                                    </div>
-                                    <div class="col-auto form-check">
-                                        <input class="form-check-input" type="checkbox" value="pod-02" id="res-pod-02" />
-                                        <label class="form-check-label" for="res-pod-02">pod-02</label>
-                                    </div>
-                                    <div class="col-auto form-check">
-                                        <input class="form-check-input" type="checkbox" value="server-01" id="res-server-01" />
-                                        <label class="form-check-label" for="res-server-01">server-01</label>
-                                    </div>
-                                    <div class="col-auto form-check">
-                                        <input class="form-check-input" type="checkbox" value="server-db" id="res-server-db" />
-                                        <label class="form-check-label" for="res-server-db">server-db</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-12">
-                                <label for="description" class="form-label">Description</label>
-                                <textarea class="form-control" id="description" rows="2" placeholder="Détails, lien runbook, etc."></textarea>
-                            </div>
-                        </form>
+                    <div class="sidebar">
+                        <h3 class="title is-5">
+                            <span class="icon"><i class="fas fa-info-circle"></i></span>
+                            <span>Statistiques</span>
+                        </h3>
+                        <div class="content is-small">
+                            <ul>
+                                <li>
+                                    <strong>Mes événements:</strong>
+                                    <span id="stats-my-events" class="tag is-light">0</span>
+                                </li>
+                                <li>
+                                    <strong>Rôle:</strong>
+                                    <span id="stats-role" class="tag is-info">Utilisateur</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button type="button" id="saveEventBtn" class="btn btn-primary">Enregistrer</button>
+
+                    <div class="box has-background-light">
+                        <a href="/static/profile.html" class="button is-fullwidth is-info is-light">
+                            <span class="icon"><i class="fas fa-user"></i></span>
+                            <span>Mon Profil</span>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-            crossorigin="anonymous"
-        ></script>
-
-        <script>
-            const API_BASE = 'http://localhost:8000';
-
-            function getSelectedResources() {
-                return Array.from(document.querySelectorAll('#resourcesContainer input[type="checkbox"]:checked')).map(
-                    (el) => el.value
-                );
-            }
-
-            function showToast(message, type = 'danger') {
-                const toastHTML = `
-                    <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                    <div class="d-flex">
-                        <div class="toast-body">${message}</div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    <!-- Modal de création d'événement -->
+    <div id="event-modal" class="modal">
+        <div class="modal-background" onclick="closeModal()"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">
+                    <span class="icon"><i class="fas fa-plus-circle"></i></span>
+                    <span>Nouvel Événement</span>
+                </p>
+                <button class="delete" aria-label="close" onclick="closeModal()"></button>
+            </header>
+            <section class="modal-card-body">
+                <form id="event-form" onsubmit="handleFormSubmit(event)">
+                    <div class="field">
+                        <label class="label">Titre</label>
+                        <div class="control has-icons-left">
+                            <input class="input" type="text" id="event-title" placeholder="Ex: Réunion d'équipe" required>
+                            <span class="icon is-small is-left">
+                                <i class="fas fa-pencil-alt"></i>
+                            </span>
+                        </div>
                     </div>
+
+                    <div class="field">
+                        <label class="label">Début</label>
+                        <div class="control has-icons-left">
+                            <input class="input" type="text" id="event-start" placeholder="Choisir début" required>
+                            <span class="icon is-small is-left">
+                                <i class="fas fa-calendar"></i>
+                            </span>
+                        </div>
                     </div>
-                `;
-                const toastContainer = document.getElementById('toastContainer') || (() => {
-                    const container = document.createElement('div');
-                    container.id = 'toastContainer';
-                    container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-                    document.body.appendChild(container);
-                    return container;
-                })();
-                
-                const toastEl = document.createElement('div');
-                toastEl.innerHTML = toastHTML;
-                toastContainer.appendChild(toastEl.firstElementChild);
-                
-                const toast = new bootstrap.Toast(toastContainer.lastElementChild);
-                toast.show();
+
+                    <div class="field">
+                        <label class="label">Fin</label>
+                        <div class="control has-icons-left">
+                            <input class="input" type="text" id="event-end" placeholder="Choisir fin" required>
+                            <span class="icon is-small is-left">
+                                <i class="fas fa-calendar"></i>
+                            </span>
+                        </div>
+                        <p class="help">Sélectionnez une période (début → fin).</p>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Description</label>
+                        <div class="control">
+                            <textarea class="textarea" id="event-description" placeholder="Détails de l'événement..."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" type="submit" form="event-form">
+                    <span class="icon"><i class="fas fa-save"></i></span>
+                    <span>Enregistrer</span>
+                </button>
+                <button class="button" onclick="closeModal()">Annuler</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal d'erreur (avec bouton OK) -->
+    <div id="error-modal" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">
+                    <span class="icon"><i class="fas fa-triangle-exclamation"></i></span>
+                    <span>Erreur</span>
+                </p>
+                <button class="delete" aria-label="close" disabled></button>
+            </header>
+            <section class="modal-card-body">
+                <div class="content">
+                    <p id="error-modal-message"></p>
+                </div>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-danger" onclick="closeErrorModal()">OK</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal détails RDV (sidebar "Prochains Événements") -->
+    <div id="event-details-modal" class="modal">
+        <div class="modal-background" onclick="closeEventDetailsModal()"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">
+                    <span class="icon"><i class="fas fa-calendar-day"></i></span>
+                    <span>Détails du rendez-vous</span>
+                </p>
+                <button class="delete" aria-label="close" onclick="closeEventDetailsModal()"></button>
+            </header>
+            <section class="modal-card-body">
+                <div class="content">
+                    <p><strong>Titre:</strong> <span id="details-title"></span></p>
+                    <p><strong>Début:</strong> <span id="details-start"></span></p>
+                    <p><strong>Fin:</strong> <span id="details-end"></span></p>
+                    <p><strong>Description:</strong></p>
+                    <p id="details-description" class="has-text-grey"></p>
+                </div>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button" onclick="closeEventDetailsModal()">OK</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/navbar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+    
+    <script>
+        let calendar;
+        let events = [];
+        let pendingAllDaySelection = false;
+
+        function formatForDatetimeLocal(date) {
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        }
+
+        function addHours(date, hours) {
+            return new Date(date.getTime() + hours * 60 * 60 * 1000);
+        }
+
+        function normalizeDateString(value) {
+            if (!value) return null;
+            if (typeof value !== 'string') return value;
+
+            // Si l'API renvoie une date-only (YYYY-MM-DD), FullCalendar gère ça bien.
+            // Pour les date-times, on garde la chaîne telle quelle pour préserver l'intention (local vs offset).
+            return value;
+        }
+
+        function normalizeApiEvent(ev) {
+            if (!ev || typeof ev !== 'object') return ev;
+
+            const allDay = ev.allDay ?? ev.all_day ?? false;
+            return {
+                ...ev,
+                start: normalizeDateString(ev.start),
+                end: normalizeDateString(ev.end),
+                allDay,
+            };
+        }
+
+        function isMidnightDatetimeLocal(value) {
+            // value: YYYY-MM-DDTHH:mm
+            if (!value || typeof value !== 'string') return false;
+            const time = value.split('T')[1];
+            return time === '00:00';
+        }
+
+        function initDateTimePickers() {
+            // Flatpickr en mode 24h, avec saisie possible + picker moderne
+            const config = {
+                enableTime: true,
+                time_24hr: true,
+                allowInput: true,
+                locale: 'fr',
+                dateFormat: 'Y-m-d\\TH:i',
+            };
+
+            if (window.flatpickr) {
+                flatpickr('#event-start', config);
+                flatpickr('#event-end', config);
+            }
+        }
+
+        // Initialiser la page
+        async function initPage() {
+            // Vérifier l'authentification
+            if (!auth.isAuthenticated()) {
+                window.location.href = '/static/login.html';
+                return;
             }
 
-            function getMinDateTime() {
-                // Retourner maintenant + 15 min en heure locale
-                const now = new Date();
-                now.setMinutes(now.getMinutes() + 15);
-                const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const day = String(now.getDate()).padStart(2, '0');
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                return `${year}-${month}-${day}T${hours}:${minutes}`;
-            }
-
-            function isEventPast(eventStart) {
-                const eventDate = new Date(eventStart);
-                return eventDate < new Date();
-            }
-
-            async function fetchEvents(fetchInfo, successCallback, failureCallback) {
-                try {
-                    const res = await fetch(`${API_BASE}/events/`);
-                    const data = await res.json();
-                    successCallback(data);
-                } catch (e) {
-                    console.error(e);
-                    failureCallback(e);
+            if (auth.debug) {
+                console.warn('DEBUG MODE ENABLED');
+                // Petit indice visuel sans refonte UI
+                const msg = document.getElementById('welcome-message');
+                if (msg) {
+                    msg.textContent = 'Mode debug activé (voir Console).';
                 }
             }
 
-            document.addEventListener('DOMContentLoaded', function () {
-                let currentSelection = null;
+            // Créer la navbar
+            createNavbar('calendar');
 
-                const startInput = document.getElementById('start');
-                const endInput = document.getElementById('end');
+            // Charger les données utilisateur
+            await loadUserInfo();
 
-                const calendarEl = document.getElementById('calendar');
-                const calendar = new FullCalendar.Calendar(calendarEl, {
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,timeGridWeek,timeGridDay,timeGridDay'
-                    },
-                    initialView: 'dayGridMonth',
-                    selectable: true,
-                    editable: true,
-                    dayMaxEvents: true,
-                    selectMirror: true,
-                    events: fetchEvents,
-                    eventClick: async function (info) {
-                        // Empêcher édition des événements passés
-                        if (isEventPast(info.event.start)) {
-                            showToast('❌ Impossible de modifier un évènement passé', 'danger');
-                            return;
-                        }
-                        if (confirm(`Supprimer "${info.event.title}" ?`)) {
-                            try {
-                                const res = await fetch(`${API_BASE}/events/${info.event.id}`, { method: 'DELETE' });
-                                if (!res.ok) {
-                                    const errData = await res.json();
-                                    showToast(`❌ ${errData.detail || 'Erreur de suppression'}`, 'danger');
-                                    return;
-                                }
-                                showToast('✅ Évènement supprimé', 'success');
-                                calendar.refetchEvents();
-                            } catch (e) {
-                                showToast(`❌ ${e.message}`, 'danger');
-                            }
-                        }
-                    },
-                    eventDrop: async function (info) {
-                        try {
-                            const res = await fetch(`${API_BASE}/events/${info.event.id}`, {
-                                method: 'PUT',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ start: info.event.startStr, end: info.event.endStr || null })
-                            });
-                            if (!res.ok) {
-                                const errData = await res.json();
-                                showToast(`❌ ${errData.detail || 'Erreur'}`, 'danger');
-                                calendar.refetchEvents();
-                                return;
-                            }
-                            showToast('✅ Évènement déplacé', 'success');
-                        } catch (e) {
-                            showToast(`❌ ${e.message}`, 'danger');
-                            calendar.refetchEvents();
-                        }
-                    },
-                    select: function (info) {
-                        currentSelection = info;
-                        // Prefill modal fields
-                        startInput.value = info.startStr.slice(0, 16);
-                        endInput.value = info.endStr ? info.endStr.slice(0, 16) : '';
-                        document.getElementById('all_day').checked = info.allDay || false;
+            // Charger les événements est géré par initializeCalendar maintenant
+            // await loadEvents();
 
-                        const modal = new bootstrap.Modal(document.getElementById('eventModal'));
-                        modal.show();
+            // Initialiser le calendrier
+            initializeCalendar();
+
+            // Initialiser les pickers après que le DOM soit prêt
+            initDateTimePickers();
+
+            // Clic sur la liste "Prochains Événements"
+            setupUpcomingEventsClick();
+        }
+
+        // Charger les infos utilisateur
+        async function loadUserInfo() {
+            try {
+                const response = await auth.fetch('/auth/me');
+                if (response && response.ok) {
+                    const user = await response.json();
+                    auth.setUser(user);
+
+                    // Mettre à jour le message de bienvenue
+                    document.getElementById('welcome-message').textContent =
+                        `Bienvenue, ${user.first_name}! Vous êtes connecté en tant que ${user.role}.`;
+
+                    // Mettre à jour les stats
+                    document.getElementById('stats-role').textContent = user.role;
+                    document.getElementById('stats-role').classList.remove('is-info');
+                    if (user.role === 'ADMIN') {
+                        document.getElementById('stats-role').classList.add('is-danger');
+                    } else if (user.role === 'MODERATOR') {
+                        document.getElementById('stats-role').classList.add('is-warning');
+                    } else {
+                        document.getElementById('stats-role').classList.add('is-success');
                     }
-                });
-
-                calendar.render();
-
-                // Mettre à jour min datetime au chargement et au focus
-                function updateMinDateTime() {
-                    const minDt = getMinDateTime();
-                    startInput.min = minDt;
-                    endInput.min = minDt;
                 }
-                updateMinDateTime();
+            } catch (error) {
+                console.error('Erreur lors du chargement des infos utilisateur:', error);
+            }
+        }
 
-                document.getElementById('refreshBtn').addEventListener('click', () => calendar.refetchEvents());
-                
-                document.getElementById('openCreateModal').addEventListener('click', () => {
-                    currentSelection = null;
-                    document.getElementById('eventForm').reset();
-                    updateMinDateTime();
-                    const modal = new bootstrap.Modal(document.getElementById('eventModal'));
-                    modal.show();
-                });
+        // Charger les événements
+        async function loadEvents() {
+            try {
+                const response = await auth.fetch('/events/');
+                if (response && response.ok) {
+                    const raw = await response.json();
+                    events = Array.isArray(raw) ? raw.map(normalizeApiEvent) : [];
 
-                document.getElementById('saveEventBtn').addEventListener('click', async () => {
-                    const title = document.getElementById('title').value.trim();
-                    if (!title) {
-                        document.getElementById('title').focus();
-                        return;
-                    }
-                    const start = startInput.value;
-                    const end = endInput.value || null;
-                    const color = document.getElementById('color').value || '#28a745';
-                    const rrule = document.getElementById('rrule').value || null;
-                    const all_day = document.getElementById('all_day').checked;
-                    const description = document.getElementById('description').value || null;
-                    const resources = getSelectedResources();
+                    // Afficher les prochains événements
+                    displayUpcomingEvents();
 
+                    // Mettre à jour les stats
+                    document.getElementById('stats-my-events').textContent = events.length;
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des événements:', error);
+                document.getElementById('events-list').innerHTML =
+                    '<p class="has-text-danger">Erreur lors du chargement</p>';
+            }
+        }
+
+        // Afficher les prochains événements
+        function displayUpcomingEvents() {
+            const listDiv = document.getElementById('events-list');
+            if (events.length === 0) {
+                listDiv.innerHTML = '<p class="has-text-grey">Aucun événement</p>';
+                return;
+            }
+
+            // Trier par date
+            const sorted = [...events].sort((a, b) => new Date(a.start) - new Date(b.start));
+
+            // Afficher les 5 prochains menant
+            const upcoming = sorted.slice(0, 5);
+            const currentRole = (auth.getCurrentUser()?.role || 'USER').toLowerCase();
+            listDiv.innerHTML = upcoming.map(event => `
+                <div class="event-item ${currentRole}-event" data-event-id="${event.id}">
+                    <strong>${event.title}</strong>
+                    <p class="event-time">
+                        <i class="fas fa-clock"></i>
+                        ${new Date(event.start).toLocaleString('fr-FR')}
+                    </p>
+                    ${event.description ? `<p class="is-size-7">${event.description}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Initialiser le calendrier FullCalendar
+        function initializeCalendar() {
+            const calendarEl = document.getElementById('calendar');
+
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                selectable: true,
+                events: async function(info, successCallback, failureCallback) {
                     try {
-                        const res = await fetch(`${API_BASE}/events/`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ title, start, end, color, resources, rrule, all_day, description })
-                        });
-                        
-                        if (!res.ok) {
-                            const errData = await res.json();
-                            const detail = errData.detail;
-                            if (typeof detail === 'string') {
-                                showToast(`❌ ${detail}`, 'danger');
-                            } else if (Array.isArray(detail)) {
-                                const msg = detail[0]?.msg || 'Erreur de validation';
-                                showToast(`❌ ${msg}`, 'danger');
-                            } else {
-                                showToast('❌ Erreur lors de l\'enregistrement', 'danger');
-                            }
-                            return;
+                        const response = await auth.fetch('/events/');
+                        if (response.ok) {
+                            const raw = await response.json();
+                            const data = Array.isArray(raw) ? raw.map(normalizeApiEvent) : [];
+                            // Mettre à jour la variable globale pour le sidebar
+                            events = data;
+                            displayUpcomingEvents();
+                            
+                            // Mettre à jour les stats
+                            const statsEl = document.getElementById('stats-my-events');
+                            if (statsEl) statsEl.textContent = events.length;
+                            
+                            successCallback(data);
+                        } else {
+                            failureCallback('Erreur API');
                         }
-
-                        const modalEl = document.getElementById('eventModal');
-                        const modal = bootstrap.Modal.getInstance(modalEl);
-                        modal.hide();
-                        calendar.unselect();
-                        showToast('✅ Évènement créé', 'success');
-                        calendar.refetchEvents();
                     } catch (e) {
-                        console.error(e);
-                        showToast(`❌ ${e.message}`, 'danger');
+                         failureCallback(e);
                     }
+                },
+                eventClick: function(info) {
+                    showEventDetails(info.event);
+                },
+                dateClick: function(info) {
+                    // Clic simple: on propose une période par défaut (1h)
+                    showNewEventModal({
+                        start: info.date,
+                        end: addHours(info.date, 1)
+                    });
+                },
+                select: function(info) {
+                    // Sélection d'une période: préremplir début/fin
+                    showNewEventModal({ start: info.start, end: info.end, allDay: info.allDay });
+                    calendar.unselect();
+                }
+            });
+
+            calendar.render();
+        }
+
+        // Afficher les détails d'un événement
+        function showEventDetails(event) {
+            const startStr = event.start ? new Date(event.start).toLocaleString('fr-FR') : 'N/A';
+            const endStr = event.end ? new Date(event.end).toLocaleString('fr-FR') : 'N/A';
+            alert(`
+Événement: ${event.title}
+Début: ${startStr}
+Fin: ${endStr}
+Description: ${event.extendedProps.description || 'N/A'}
+            `);
+
+            // Proposer la suppression
+            if (confirm('Supprimer ce rendez-vous ?')) {
+                deleteEvent(event.id);
+            }
+        }
+
+        // Créer un nouvel événement
+           function showNewEventModal(selection) {
+            const modal = document.getElementById('event-modal');
+              const startInput = document.getElementById('event-start');
+              const endInput = document.getElementById('event-end');
+
+              const startDate = selection?.start instanceof Date ? selection.start : new Date();
+              const endDate = selection?.end instanceof Date ? selection.end : addHours(startDate, 1);
+
+            pendingAllDaySelection = selection?.allDay === true;
+
+              startInput.value = formatForDatetimeLocal(startDate);
+              endInput.value = formatForDatetimeLocal(endDate);
+            document.getElementById('event-title').value = '';
+            document.getElementById('event-description').value = '';
+            
+            modal.classList.add('is-active');
+            
+            // Focus sur le titre après une petite pause pour laisser la transition se faire
+            setTimeout(() => document.getElementById('event-title').focus(), 100);
+        }
+
+        // Fermer la modal
+        function closeModal() {
+            document.getElementById('event-modal').classList.remove('is-active');
+        }
+
+        function showErrorModal(message) {
+            const msgEl = document.getElementById('error-modal-message');
+            msgEl.textContent = message || 'Une erreur est survenue.';
+            window.__errorModalOpenedAt = Date.now();
+            document.getElementById('error-modal').classList.add('is-active');
+        }
+
+        function closeErrorModal() {
+            // Évite une fermeture “instantanée” causée par un clic résiduel
+            if (window.__errorModalOpenedAt && Date.now() - window.__errorModalOpenedAt < 400) {
+                return;
+            }
+            document.getElementById('error-modal').classList.remove('is-active');
+        }
+
+        function showEventDetailsModal(details) {
+            document.getElementById('details-title').textContent = details.title || 'N/A';
+            document.getElementById('details-start').textContent = details.start || 'N/A';
+            document.getElementById('details-end').textContent = details.end || 'N/A';
+            document.getElementById('details-description').textContent = details.description || 'N/A';
+            document.getElementById('event-details-modal').classList.add('is-active');
+        }
+
+        function closeEventDetailsModal() {
+            document.getElementById('event-details-modal').classList.remove('is-active');
+        }
+
+        function setupUpcomingEventsClick() {
+            const listDiv = document.getElementById('events-list');
+            if (!listDiv) return;
+
+            // Délégation: un seul listener, fonctionne après re-render
+            listDiv.addEventListener('click', (e) => {
+                const item = e.target.closest('.event-item');
+                if (!item) return;
+                const eventId = item.getAttribute('data-event-id');
+                if (!eventId) return;
+
+                const ev = events.find(x => String(x.id) === String(eventId));
+                if (!ev) return;
+
+                const startStr = ev.start ? new Date(ev.start).toLocaleString('fr-FR') : 'N/A';
+                const endStr = ev.end ? new Date(ev.end).toLocaleString('fr-FR') : 'N/A';
+
+                showEventDetailsModal({
+                    title: ev.title,
+                    start: startStr,
+                    end: endStr,
+                    description: ev.description || 'N/A',
                 });
             });
-        </script>
-    </body>
-    </html>
+        }
+
+        // Gérer la soumission du formulaire
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const title = document.getElementById('event-title').value;
+            const startVal = document.getElementById('event-start').value; // YYYY-MM-DDTHH:mm
+            const endVal = document.getElementById('event-end').value; // YYYY-MM-DDTHH:mm
+            const description = document.getElementById('event-description').value;
+
+            if (title && startVal && endVal) {
+                // On peut ajouter les secondes si nécessaire
+                const startWithSeconds = startVal.length === 16 ? startVal + ':00' : startVal;
+                const endWithSeconds = endVal.length === 16 ? endVal + ':00' : endVal;
+
+                // Si l'utilisateur a sélectionné une plage all-day (vue mois), on crée un événement all_day
+                // (start/end restent des ISO datetime, compatibles avec l'API)
+                const shouldAllDay = pendingAllDaySelection && isMidnightDatetimeLocal(startVal) && isMidnightDatetimeLocal(endVal);
+                const apiStart = startWithSeconds;
+                const apiEnd = endWithSeconds;
+
+                if (new Date(endWithSeconds) <= new Date(startWithSeconds)) {
+                    showErrorModal('La date de fin doit être après la date de début.');
+                    return;
+                }
+
+                const ok = await createEvent({
+                    title,
+                    start: apiStart,
+                    end: apiEnd,
+                    description,
+                    all_day: shouldAllDay
+                });
+                if (ok) closeModal();
+            }
+        }
+
+        // Créer un événement via l'API
+        async function createEvent(payload) {
+            try {
+                const body = { ...payload };
+                // Cas legacy: si on nous donne un datetime sans "T", on le normalise.
+                if (typeof body.start === 'string' && body.start && !body.start.includes('T') && body.start.length > 10) {
+                    body.start = body.start + 'T12:00:00';
+                }
+                if (typeof body.end === 'string' && body.end && !body.end.includes('T') && body.end.length > 10) {
+                    body.end = body.end + 'T13:00:00';
+                }
+
+                const response = await auth.fetch('/events/', {
+                    method: 'POST',
+                    body: JSON.stringify(body)
+                });
+
+                if (response && response.ok) {
+                    // await loadEvents(); // Plus nécessaire car refetchEvents s'en occupe
+                    if (calendar) {
+                        calendar.refetchEvents();
+                    }
+                    // Reset du bon formulaire (id="event-form")
+                    const form = document.getElementById('event-form');
+                    if (form) form.reset();
+                    return true;
+                } else {
+                    let errorMsg = 'Erreur lors de la création de l\'événement';
+                    if (response) {
+                        try {
+                            const err = await response.json();
+                            if (err.detail) {
+                                // Pydantic returns details, sometimes arrays
+                                if (Array.isArray(err.detail)) {
+                                    errorMsg += ': ' + err.detail.map(e => e.msg).join(', ');
+                                } else {
+                                    errorMsg += ': ' + err.detail;
+                                }
+                            }
+                        } catch (e) {}
+
+                        // Si pas de JSON, lire le texte brut
+                        try {
+                            const txt = await response.text();
+                            if (txt && !errorMsg.includes(txt)) {
+                                errorMsg += ` (HTTP ${response.status})`;
+                            }
+                        } catch (e) {}
+                    }
+                    if (!response) {
+                        errorMsg += ' (non authentifié ou session expirée)';
+                    }
+
+                    showErrorModal(errorMsg);
+                    console.error('Create event failed:', response?.status, body);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showErrorModal('Erreur lors de la création');
+                return false;
+            }
+        }
+
+        async function deleteEvent(eventId) {
+            try {
+                const response = await auth.fetch(`/events/${eventId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response && response.ok) {
+                    if (calendar) {
+                        calendar.refetchEvents();
+                    }
+                } else {
+                    let errorMsg = 'Erreur lors de la suppression';
+                    if (response) {
+                        try {
+                            const err = await response.json();
+                            if (err.detail) errorMsg += `: ${err.detail}`;
+                        } catch (e) {}
+                    }
+                    showErrorModal(errorMsg);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showErrorModal('Erreur lors de la suppression');
+            }
+        }
+
+        // Initialiser à la charge
+        initPage();
+    </script>
+</body>
+</html>

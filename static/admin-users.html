@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Utilisateurs - Admin</title>
+    
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        nav.navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .main-container {
+            padding: 2rem 0;
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 2rem;
+        }
+        
+        .page-title {
+            color: white;
+            margin-bottom: 2rem;
+        }
+        
+        .users-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .search-box {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .user-row {
+            border-bottom: 1px solid #eee;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .user-row:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .user-email {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .role-admin {
+            background: #ffe0e0;
+            color: #d9534f;
+        }
+        
+        .role-moderator {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .role-user {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .modal-card {
+            border-radius: 8px;
+        }
+        
+        .modal-background {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar sera injectée ici par le JS -->
+    
+    <div class="main-container">
+        <div class="container">
+            <h1 class="title page-title">
+                <span class="icon"><i class="fas fa-users-cog"></i></span>
+                <span>Gestion des Utilisateurs</span>
+            </h1>
+
+            <!-- Statistiques -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-total">0</div>
+                    <div class="stat-label">Utilisateurs Total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-admin">0</div>
+                    <div class="stat-label">Administrateurs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-moderator">0</div>
+                    <div class="stat-label">Modérateurs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-user">0</div>
+                    <div class="stat-label">Utilisateurs</div>
+                </div>
+            </div>
+
+            <!-- Recherche et filtres -->
+            <div class="search-box">
+                <div class="field has-addons">
+                    <div class="control is-expanded">
+                        <input 
+                            class="input" 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="Rechercher par nom, email..."
+                            onkeyup="filterUsers()"
+                        >
+                    </div>
+                    <div class="control">
+                        <div class="select">
+                            <select id="roleFilter" onchange="filterUsers()">
+                                <option value="">Tous les rôles</option>
+                                <option value="ADMIN">Admin</option>
+                                <option value="MODERATOR">Modérateur</option>
+                                <option value="USER">Utilisateur</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <button class="button is-info" onclick="reloadUsers()">
+                            <span class="icon"><i class="fas fa-sync-alt"></i></span>
+                            <span>Actualiser</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des utilisateurs -->
+            <div class="users-table">
+                <div style="padding: 1rem; background: #f5f5f5; font-weight: bold; border-bottom: 2px solid #ddd;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <div style="flex: 1;">Utilisateur</div>
+                        <div style="width: 150px;">Rôle</div>
+                        <div style="width: 100px;">Statut</div>
+                        <div style="width: 150px;">Actions</div>
+                    </div>
+                </div>
+
+                <div id="users-list">
+                    <div style="padding: 2rem; text-align: center;">
+                        <p class="has-text-grey">
+                            <span class="icon"><i class="fas fa-spinner fa-spin"></i></span>
+                            <span>Chargement des utilisateurs...</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour éditer un utilisateur -->
+    <div class="modal" id="editUserModal">
+        <div class="modal-background" onclick="closeModal()"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">
+                    <span class="icon"><i class="fas fa-user-edit"></i></span>
+                    <span>Éditer l'utilisateur</span>
+                </p>
+                <button class="delete" aria-label="close" onclick="closeModal()"></button>
+            </header>
+            <section class="modal-card-body">
+                <div class="field">
+                    <label class="label">Prénom</label>
+                    <div class="control">
+                        <input class="input" type="text" id="editFirstName" placeholder="Prénom">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Nom</label>
+                    <div class="control">
+                        <input class="input" type="text" id="editLastName" placeholder="Nom">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Email</label>
+                    <div class="control">
+                        <input class="input" type="email" id="editEmail" placeholder="Email" readonly>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Rôle</label>
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                            <select id="editRole">
+                                <option value="USER">Utilisateur</option>
+                                <option value="MODERATOR">Modérateur</option>
+                                <option value="ADMIN">Administrateur</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Statut</label>
+                    <div class="control">
+                        <label class="checkbox">
+                            <input type="checkbox" id="editActive">
+                            Actif
+                        </label>
+                    </div>
+                </div>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button" onclick="closeModal()">Annuler</button>
+                <button class="button is-success" onclick="saveUserChanges()">Enregistrer</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation de suppression -->
+    <div class="modal" id="deleteConfirmModal">
+        <div class="modal-background" onclick="closeDeleteModal()"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">
+                    <span class="icon"><i class="fas fa-exclamation-triangle"></i></span>
+                    <span>Confirmer la suppression</span>
+                </p>
+                <button class="delete" aria-label="close" onclick="closeDeleteModal()"></button>
+            </header>
+            <section class="modal-card-body">
+                <p>Êtes-vous sûr de vouloir supprimer cet utilisateur? Cette action est définitive.</p>
+                <p id="deleteUserName" style="margin-top: 1rem; font-weight: bold;"></p>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button" onclick="closeDeleteModal()">Annuler</button>
+                <button class="button is-danger" onclick="confirmDeleteUser()">Supprimer</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/navbar.js"></script>
+
+    <script>
+        let allUsers = [];
+        let currentEditingUser = null;
+        let currentDeletingUserId = null;
+
+        // Initialiser la page
+        async function initPage() {
+            if (!auth.isAuthenticated()) {
+                window.location.href = '/static/login.html';
+                return;
+            }
+
+            const user = auth.getCurrentUser();
+            if (user.role !== 'ADMIN') {
+                alert('Accès refusé: seuls les administrateurs peuvent accéder à cette page');
+                window.location.href = '/static/index.html';
+                return;
+            }
+
+            createNavbar('admin');
+            await loadUsers();
+        }
+
+        // Charger la liste des utilisateurs
+        async function loadUsers() {
+            try {
+                const response = await auth.fetch('/users/');
+                if (response && response.ok) {
+                    allUsers = await response.json();
+                    displayUsers(allUsers);
+                    updateStats();
+                } else {
+                    document.getElementById('users-list').innerHTML =
+                        '<p class="has-text-danger" style="padding: 2rem; text-align: center;">Erreur lors du chargement</p>';
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('users-list').innerHTML =
+                    '<p class="has-text-danger" style="padding: 2rem; text-align: center;">Erreur de connexion</p>';
+            }
+        }
+
+        // Afficher les utilisateurs
+        function displayUsers(users) {
+            if (users.length === 0) {
+                document.getElementById('users-list').innerHTML =
+                    '<p class="has-text-grey" style="padding: 2rem; text-align: center;">Aucun utilisateur trouvé</p>';
+                return;
+            }
+
+            document.getElementById('users-list').innerHTML = users.map(user => `
+                <div class="user-row">
+                    <div class="user-info">
+                        <div class="user-name">${user.first_name} ${user.last_name}</div>
+                        <div class="user-email">${user.email}</div>
+                    </div>
+                    <div style="width: 150px;">
+                        <span class="role-badge role-${user.role.toLowerCase()}">
+                            ${user.role}
+                        </span>
+                    </div>
+                    <div style="width: 100px;">
+                        ${user.is_active ? 
+                            '<span class="tag is-success">Actif</span>' :
+                            '<span class="tag is-danger">Inactif</span>'
+                        }
+                    </div>
+                    <div class="user-actions">
+                        <button class="button is-small is-info is-light" onclick="editUser(${user.id})">
+                            <span class="icon is-small"><i class="fas fa-edit"></i></span>
+                        </button>
+                        <button class="button is-small is-danger is-light" onclick="deleteUser(${user.id})">
+                            <span class="icon is-small"><i class="fas fa-trash"></i></span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Mettre à jour les statistiques
+        function updateStats() {
+            const total = allUsers.length;
+            const admins = allUsers.filter(u => u.role === 'ADMIN').length;
+            const moderators = allUsers.filter(u => u.role === 'MODERATOR').length;
+            const users = allUsers.filter(u => u.role === 'USER').length;
+
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-admin').textContent = admins;
+            document.getElementById('stat-moderator').textContent = moderators;
+            document.getElementById('stat-user').textContent = users;
+        }
+
+        // Filtrer les utilisateurs
+        function filterUsers() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value;
+
+            const filtered = allUsers.filter(user => {
+                const matchesSearch = user.first_name.toLowerCase().includes(search) ||
+                    user.last_name.toLowerCase().includes(search) ||
+                    user.email.toLowerCase().includes(search);
+
+                const matchesRole = !roleFilter || user.role === roleFilter;
+
+                return matchesSearch && matchesRole;
+            });
+
+            displayUsers(filtered);
+        }
+
+        // Éditer un utilisateur
+        function editUser(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            currentEditingUser = user;
+            document.getElementById('editFirstName').value = user.first_name;
+            document.getElementById('editLastName').value = user.last_name;
+            document.getElementById('editEmail').value = user.email;
+            document.getElementById('editRole').value = user.role;
+            document.getElementById('editActive').checked = user.is_active;
+
+            document.getElementById('editUserModal').classList.add('is-active');
+        }
+
+        // Fermer le modal d'édition
+        function closeModal() {
+            document.getElementById('editUserModal').classList.remove('is-active');
+            currentEditingUser = null;
+        }
+
+        // Enregistrer les changements
+        async function saveUserChanges() {
+            if (!currentEditingUser) return;
+
+            const userData = {
+                first_name: document.getElementById('editFirstName').value,
+                last_name: document.getElementById('editLastName').value,
+                role: document.getElementById('editRole').value,
+                is_active: document.getElementById('editActive').checked
+            };
+
+            try {
+                const response = await auth.fetch(`/users/${currentEditingUser.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(userData)
+                });
+
+                if (response && response.ok) {
+                    alert('Utilisateur mis à jour!');
+                    closeModal();
+                    await loadUsers();
+                } else {
+                    alert('Erreur lors de la mise à jour');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de connexion');
+            }
+        }
+
+        // Supprimer un utilisateur
+        function deleteUser(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            currentDeletingUserId = userId;
+            document.getElementById('deleteUserName').textContent =
+                `${user.first_name} ${user.last_name} (${user.email})`;
+            document.getElementById('deleteConfirmModal').classList.add('is-active');
+        }
+
+        // Fermer le modal de confirmation
+        function closeDeleteModal() {
+            document.getElementById('deleteConfirmModal').classList.remove('is-active');
+            currentDeletingUserId = null;
+        }
+
+        // Confirmer la suppression
+        async function confirmDeleteUser() {
+            if (!currentDeletingUserId) return;
+
+            try {
+                const response = await auth.fetch(`/users/${currentDeletingUserId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response && response.ok) {
+                    alert('Utilisateur supprimé!');
+                    closeDeleteModal();
+                    await loadUsers();
+                } else {
+                    alert('Erreur lors de la suppression');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de connexion');
+            }
+        }
+
+        // Recharger
+        function reloadUsers() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('roleFilter').value = '';
+            loadUsers();
+        }
+
+        // Initialiser
+        initPage();
+    </script>
+</body>
+</html>

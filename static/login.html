@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - DevOps Calendar</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+        }
+        .login-box {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+        }
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo-section h1 {
+            font-size: 28px;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        .logo-section p {
+            color: #888;
+            font-size: 14px;
+        }
+        .field label {
+            color: #333;
+            font-weight: 600;
+        }
+        .input {
+            border-radius: 5px;
+        }
+        .button {
+            border-radius: 5px;
+            font-weight: 600;
+            background-color: #667eea;
+            border: none;
+        }
+        .button:hover {
+            background-color: #5568d3;
+        }
+        .signup-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .signup-link a {
+            color: #667eea;
+            font-weight: 600;
+        }
+        .error-message {
+            display: none;
+            color: #e74c3c;
+            font-size: 14px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #fadbd8;
+            border-radius: 5px;
+            border-left: 4px solid #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="logo-section">
+                <h1><i class="fas fa-calendar-alt"></i> DevOps Calendar</h1>
+                <p>Gestion d'événements et RDV</p>
+            </div>
+
+            <div id="error-message" class="error-message"></div>
+
+            <form id="login-form">
+                <div class="field">
+                    <label class="label">Email</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="email" id="email" placeholder="votre@email.com" required>
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Mot de passe</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="password" id="password" placeholder="Minimum 8 caractères" required>
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        <button class="button is-fullwidth is-medium" type="submit" id="submit-btn">
+                            <span class="icon">
+                                <i class="fas fa-sign-in-alt"></i>
+                            </span>
+                            <span>Se connecter</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="signup-link">
+                Pas de compte ? <a href="register.html">Créer un compte</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error-message');
+            const submitBtn = document.getElementById('submit-btn');
+            
+            errorDiv.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.classList.add('is-loading');
+            
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Sauvegarder le token
+                    localStorage.setItem('token', data.access_token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    // Redirection vers le calendrier
+                    window.location.href = '/static/index.html';
+                } else {
+                    const error = await response.json();
+                    errorDiv.textContent = error.detail || 'Erreur de connexion';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Erreur réseau: ' + error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('is-loading');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil - Calendrier</title>
+    
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        nav.navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .main-container {
+            padding: 2rem 0;
+        }
+        
+        .profile-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-box {
+            background: #f5f7fa;
+            padding: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .danger-zone {
+            background: #fee;
+            border: 1px solid #fcc;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .danger-zone .section-title {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar sera injectée ici par le JS -->
+    
+    <div class="main-container">
+        <div class="container">
+            <div class="columns">
+                <!-- Colonne principale -->
+                <div class="column is-8">
+                    <!-- Infos personnelles -->
+                    <div class="profile-card">
+                        <h2 class="section-title">
+                            <span class="icon"><i class="fas fa-user-circle"></i></span>
+                            <span>Informations Personnelles</span>
+                        </h2>
+
+                        <div class="form-group">
+                            <label class="label">Prénom</label>
+                            <input class="input" type="text" id="first_name" placeholder="Prénom" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="label">Nom</label>
+                            <input class="input" type="text" id="last_name" placeholder="Nom" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="label">Email</label>
+                            <input class="input" type="email" id="email" placeholder="Email" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="label">Âge</label>
+                            <input class="input" type="number" id="age" placeholder="Âge" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="label">Numéro de Téléphone</label>
+                            <input class="input" type="tel" id="phone_number" placeholder="Numéro" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="label">Fonction</label>
+                            <input class="input" type="text" id="job_title" placeholder="Fonction" readonly>
+                        </div>
+
+                        <button class="button is-info" onclick="enableEdit()">
+                            <span class="icon"><i class="fas fa-edit"></i></span>
+                            <span>Modifier</span>
+                        </button>
+
+                        <button id="saveBtn" class="button is-success" onclick="saveProfile()" style="display: none;">
+                            <span class="icon"><i class="fas fa-save"></i></span>
+                            <span>Enregistrer</span>
+                        </button>
+
+                        <button id="cancelBtn" class="button is-light" onclick="cancelEdit()" style="display: none;">
+                            <span class="icon"><i class="fas fa-times"></i></span>
+                            <span>Annuler</span>
+                        </button>
+                    </div>
+
+                    <!-- Changement de mot de passe -->
+                    <div class="profile-card">
+                        <h2 class="section-title">
+                            <span class="icon"><i class="fas fa-lock"></i></span>
+                            <span>Sécurité</span>
+                        </h2>
+
+                        <div class="form-group">
+                            <label class="label">Mot de passe actuel</label>
+                            <input class="input" type="password" id="current_password" placeholder="Mot de passe actuel">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="label">Nouveau mot de passe</label>
+                            <input class="input" type="password" id="new_password" placeholder="Nouveau mot de passe">
+                            <p class="help is-info">
+                                <i class="fas fa-info-circle"></i>
+                                Minimum 8 caractères
+                            </p>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="label">Confirmer le mot de passe</label>
+                            <input class="input" type="password" id="confirm_password" placeholder="Confirmer le mot de passe">
+                        </div>
+
+                        <button class="button is-info" onclick="changePassword()">
+                            <span class="icon"><i class="fas fa-key"></i></span>
+                            <span>Changer le mot de passe</span>
+                        </button>
+                    </div>
+
+                    <!-- Zone de danger -->
+                    <div class="danger-zone">
+                        <h2 class="section-title">
+                            <span class="icon"><i class="fas fa-exclamation-triangle"></i></span>
+                            <span>Zone Dangereuse</span>
+                        </h2>
+
+                        <p class="mb-3">Une fois que vous supprimerez votre compte, il n'y aura pas de retour en arrière. S'il vous plaît en être certain.</p>
+
+                        <button class="button is-danger" onclick="deleteAccount()">
+                            <span class="icon"><i class="fas fa-trash"></i></span>
+                            <span>Supprimer mon compte</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="column is-4">
+                    <!-- Infos rapides -->
+                    <div class="profile-card">
+                        <h3 class="title is-5">
+                            <span class="icon"><i class="fas fa-info-circle"></i></span>
+                            <span>Infos Rapides</span>
+                        </h3>
+
+                        <div class="info-box mb-3">
+                            <p><strong>Rôle:</strong></p>
+                            <p id="role-display" class="tag is-info mt-2">Chargement...</p>
+                        </div>
+
+                        <div class="info-box mb-3">
+                            <p><strong>Statut:</strong></p>
+                            <p id="status-display" class="mt-2">
+                                <span class="tag is-success">
+                                    <i class="fas fa-check"></i> Actif
+                                </span>
+                            </p>
+                        </div>
+
+                        <div class="info-box">
+                            <p><strong>Compte créé:</strong></p>
+                            <p id="created-date" class="mt-2">Chargement...</p>
+                        </div>
+                    </div>
+
+                    <!-- Statistiques -->
+                    <div class="profile-card">
+                        <h3 class="title is-5">
+                            <span class="icon"><i class="fas fa-chart-bar"></i></span>
+                            <span>Statistiques</span>
+                        </h3>
+
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-events">0</div>
+                                <div class="stat-label">Événements</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="stat-tasks">0</div>
+                                <div class="stat-label">Tâches</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions rapides -->
+                    <div class="profile-card">
+                        <h3 class="title is-5">
+                            <span class="icon"><i class="fas fa-bolt"></i></span>
+                            <span>Actions</span>
+                        </h3>
+
+                        <a href="/static/index.html" class="button is-fullwidth is-info is-light mb-2">
+                            <span class="icon"><i class="fas fa-calendar"></i></span>
+                            <span>Voir le calendrier</span>
+                        </a>
+
+                        <button class="button is-fullwidth is-warning is-light" onclick="logout()">
+                            <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+                            <span>Déconnexion</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/navbar.js"></script>
+
+    <script>
+        let isEditing = false;
+        let originalData = {};
+
+        // Initialiser la page
+        async function initPage() {
+            if (!auth.isAuthenticated()) {
+                window.location.href = '/static/login.html';
+                return;
+            }
+
+            createNavbar('profile');
+            await loadUserProfile();
+            await loadUserStats();
+        }
+
+        // Charger le profil utilisateur
+        async function loadUserProfile() {
+            try {
+                const response = await auth.fetch('/auth/me');
+                if (response && response.ok) {
+                    const user = await response.json();
+
+                    // Remplir les champs
+                    document.getElementById('first_name').value = user.first_name;
+                    document.getElementById('last_name').value = user.last_name;
+                    document.getElementById('email').value = user.email;
+                    document.getElementById('age').value = user.age || '';
+                    document.getElementById('phone_number').value = user.phone_number || '';
+                    document.getElementById('job_title').value = user.job_title || '';
+
+                    // Afficher le rôle
+                    const roleDisplay = document.getElementById('role-display');
+                    roleDisplay.textContent = user.role;
+                    roleDisplay.classList.remove('is-info');
+                    if (user.role === 'ADMIN') {
+                        roleDisplay.classList.add('is-danger');
+                    } else if (user.role === 'MODERATOR') {
+                        roleDisplay.classList.add('is-warning');
+                    } else {
+                        roleDisplay.classList.add('is-success');
+                    }
+
+                    // Date de création
+                    const createdDate = new Date(user.created_at).toLocaleDateString('fr-FR');
+                    document.getElementById('created-date').textContent = createdDate;
+
+                    // Sauvegarder les données originales
+                    originalData = { ...user };
+                } else {
+                    alert('Erreur lors du chargement du profil');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de connexion');
+            }
+        }
+
+        // Charger les stats utilisateur
+        async function loadUserStats() {
+            try {
+                const response = await auth.fetch('/events/');
+                if (response && response.ok) {
+                    const events = await response.json();
+                    document.getElementById('stat-events').textContent = events.length;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Activer l'édition
+        function enableEdit() {
+            isEditing = true;
+            document.querySelectorAll('.profile-card input:not([type="password"])').forEach(input => {
+                input.removeAttribute('readonly');
+                input.classList.add('is-info');
+            });
+
+            document.querySelector('.button.is-info').style.display = 'none';
+            document.getElementById('saveBtn').style.display = 'inline-block';
+            document.getElementById('cancelBtn').style.display = 'inline-block';
+        }
+
+        // Annuler l'édition
+        function cancelEdit() {
+            isEditing = false;
+            document.querySelectorAll('.profile-card input:not([type="password"])').forEach(input => {
+                input.setAttribute('readonly', 'readonly');
+                input.classList.remove('is-info');
+            });
+
+            document.querySelector('.button.is-info').style.display = 'inline-block';
+            document.getElementById('saveBtn').style.display = 'none';
+            document.getElementById('cancelBtn').style.display = 'none';
+
+            // Restaurer les données
+            loadUserProfile();
+        }
+
+        // Enregistrer le profil
+        async function saveProfile() {
+            try {
+                const userData = {
+                    first_name: document.getElementById('first_name').value,
+                    last_name: document.getElementById('last_name').value,
+                    age: document.getElementById('age').value ? parseInt(document.getElementById('age').value) : null,
+                    phone_number: document.getElementById('phone_number').value || null,
+                    job_title: document.getElementById('job_title').value || null
+                };
+
+                const response = await auth.fetch('/auth/me', {
+                    method: 'PUT',
+                    body: JSON.stringify(userData)
+                });
+
+                if (response && response.ok) {
+                    const updated = await response.json();
+                    alert('Profil mis à jour avec succès!');
+                    originalData = { ...updated };
+                    cancelEdit();
+                } else {
+                    alert('Erreur lors de la mise à jour');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de connexion');
+            }
+        }
+
+        // Changer le mot de passe
+        async function changePassword() {
+            const current = document.getElementById('current_password').value;
+            const newPass = document.getElementById('new_password').value;
+            const confirm = document.getElementById('confirm_password').value;
+
+            if (!current || !newPass || !confirm) {
+                alert('Tous les champs sont obligatoires');
+                return;
+            }
+
+            if (newPass.length < 8) {
+                alert('Le nouveau mot de passe doit contenir au moins 8 caractères');
+                return;
+            }
+
+            if (newPass !== confirm) {
+                alert('Les mots de passe ne correspondent pas');
+                return;
+            }
+
+            try {
+                const response = await auth.fetch('/auth/change-password', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        current_password: current,
+                        new_password: newPass
+                    })
+                });
+
+                if (response && response.ok) {
+                    alert('Mot de passe changé avec succès!');
+                    document.getElementById('current_password').value = '';
+                    document.getElementById('new_password').value = '';
+                    document.getElementById('confirm_password').value = '';
+                } else {
+                    const error = await response.json();
+                    alert(error.detail || 'Erreur lors du changement');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de connexion');
+            }
+        }
+
+        // Supprimer le compte
+        function deleteAccount() {
+            if (!confirm('Êtes-vous vraiment sûr? Cette action est définitive!')) {
+                return;
+            }
+
+            if (!confirm('Dernière chance de confirmer! Continuer?')) {
+                return;
+            }
+
+            deleteAccountConfirmed();
+        }
+
+        async function deleteAccountConfirmed() {
+            try {
+                const response = await auth.fetch('/auth/me', {
+                    method: 'DELETE'
+                });
+
+                if (response && response.ok) {
+                    alert('Compte supprimé. Redirection vers la page de connexion...');
+                    auth.logout();
+                } else {
+                    alert('Erreur lors de la suppression du compte');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de connexion');
+            }
+        }
+
+        // Déconnexion
+        function logout() {
+            if (confirm('Vous allez être déconnecté. Continuer?')) {
+                auth.logout();
+            }
+        }
+
+        // Initialiser
+        initPage();
+    </script>
+</body>
+</html>

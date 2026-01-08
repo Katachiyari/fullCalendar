@@ -1,0 +1,47 @@
+
+Test de nouveaux utilisateurs.
+ok 
+
+
+Dans la fenetre "prochains evenements"
+Je veux pouvoir cliquer sur le RDV, et l'affiché dans un modal.
+ok
+
+ajout une synchro avec Google et Microsoft
+
+Gestion d'alerte POPUP et par mail
+
+vérification d'email a l'inscription, une fois vérifié le compte a un bagde email vérifié.
+Temps que le mail n'est pas vérifié il est en invité et ne peut pas créer de RDV
+
+Ajouter le drag and drop sur les RDV, qui gerer automatiquement le changement de date et d'horaire
+
+Ajout d'un bouton modification pour les RDV
+
+L'administrateur, doit pouvoir voir les RDV de tout les utilisateurs
+Il a un menu déroulant pour lui seuleument. Qui selectionne ou déselectionnes les calendriers :
+Tout (active affichage ou désactive / uniquement pour lui)
+Il peut selectionné uniquement le calendrier des chef de projet
+unqiuement celui des DEV etc...
+Mais il peut par exemple selectionner deux ou trois calendrier
+Ils sont affichable ou non, avec ce clique.
+Pose moi des question si tu me comprend mal.
+
+Il faut amélioré les utilisateurs :
+Ont doit pouvoir créer un groupe
+Mettre les utilisateurs dans un groupes.
+et leur données des droits.
+- Chef de projet =
+- Developpeur 
+- DevOps
+- Technicien Réseau
+
+Les tech réseau ne vois que les autres tech reseau
+Pareil pour les developpeur
+Les devops voit les devops + dev + tech
+Chef de projet vois tout le monde, peut creer un rdv pour tout le monde et l'assigné a un groupe.
+Il peut tout modifier ou tout supprimée.
+
+
+
+Bienvenue sur votre calendrier nous le "date et heure de l'ordinateur"
