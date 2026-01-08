@@ -1,0 +1,71 @@
+...                                                                      [100%]
+=============================== warnings summary ===============================
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+  /media/james/DATA1/python/fullCalendar/app/schemas.py:68: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Event(EventBase):
+
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+  /media/james/DATA1/python/fullCalendar/app/schemas_groups.py:25: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class GroupRead(GroupBase):
+
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+  /media/james/DATA1/python/fullCalendar/app/schemas_user.py:30: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class UserRead(UserBase):
+
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+  /media/james/DATA1/python/fullCalendar/app/schemas_auth.py:38: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class UserResponse(BaseModel):
+
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+  /media/james/DATA1/python/fullCalendar/app/routers/server.py:26: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class ServerTargetRead(BaseModel):
+
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+  /media/james/DATA1/python/fullCalendar/app/v2/schemas/alerts.py:16: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class AlertRead(BaseModel):
+
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+  /media/james/DATA1/python/fullCalendar/app/v2/schemas/calendar.py:8: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class CalendarEventRead(BaseModel):
+
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+  /media/james/DATA1/python/fullCalendar/app/v2/schemas/tasks.py:8: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class TaskRead(BaseModel):
+
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+  /media/james/DATA1/python/fullCalendar/app/v2/schemas/tasks.py:51: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class TaskCommentRead(BaseModel):
+
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+tests/test_server_targets.py::test_admin_can_add_server_target_and_get_metrics[asyncio]
+tests/test_server_targets.py::test_admin_can_add_server_target_and_get_metrics[asyncio]
+tests/test_tickets.py::test_ticket_update_writes_audit[asyncio]
+tests/test_tickets.py::test_ticket_update_writes_audit[asyncio]
+tests/test_tickets.py::test_ticket_update_writes_audit[asyncio]
+tests/test_tickets.py::test_ticket_update_writes_audit[asyncio]
+  /media/james/DATA1/python/fullCalendar/venv/lib/python3.12/site-packages/sqlalchemy/sql/schema.py:3596: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+tests/test_server_targets.py::test_admin_can_add_server_target_and_get_metrics[asyncio]
+tests/test_tickets.py::test_ticket_update_writes_audit[asyncio]
+  /media/james/DATA1/python/fullCalendar/app/security.py:35: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    expire = datetime.utcnow() + expires_delta
+
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+tests/test_events_permissions.py::test_admin_can_delete_past_event_only[asyncio]
+  /media/james/DATA1/python/fullCalendar/app/routers/events.py:158: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    if start_dt is not None and start_dt < datetime.utcnow() and current_user.role != UserRole.ADMIN:
+
+tests/test_tickets.py::test_ticket_update_writes_audit[asyncio]
+  /media/james/DATA1/python/fullCalendar/app/v2/routers/tickets.py:46: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow(),
+
+tests/test_tickets.py::test_ticket_update_writes_audit[asyncio]
+  /media/james/DATA1/python/fullCalendar/app/v2/routers/tickets.py:138: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "at": datetime.utcnow().isoformat(),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html

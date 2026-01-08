@@ -1,0 +1,28 @@
+{
+  "realm": "opshub",
+  "enabled": true,
+  "displayName": "OpsHub",
+  "loginTheme": "keycloak",
+  "clients": [
+    {
+      "clientId": "taiga",
+      "name": "Taiga",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost/kanban/api/oidc/*"
+      ],
+      "webOrigins": [
+        "http://localhost"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "+"
+      },
+      "secret": "change_me_taiga_oidc_client_secret"
+    }
+  ]
+}

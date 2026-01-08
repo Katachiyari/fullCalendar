@@ -1,0 +1,8 @@
+{
+  "api": "/kanban/api/v1/",
+  "eventsUrl": "/kanban/events",
+  "baseHref": "/kanban/",
+  "contribPlugins": ["/kanban/plugins/oidc-auth/oidc-auth.json"],
+  "oidcButtonText": "OpsHub SSO",
+  "oidcMountPoint": "/api/oidc"
+}

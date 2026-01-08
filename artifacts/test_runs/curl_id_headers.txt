@@ -1,0 +1,9 @@
+HTTP/1.1 302 Found
+Server: nginx/1.25.5
+Date: Thu, 08 Jan 2026 17:01:47 GMT
+Connection: keep-alive
+Location: http://localhost/id/admin/
+Referrer-Policy: no-referrer
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+

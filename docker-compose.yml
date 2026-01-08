@@ -28,12 +28,26 @@ services:
     build:
       context: .
       dockerfile: app/Dockerfile
-    ports: ["80:8000", "18000:8000"]
+    expose: ["8000"]
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2).read()"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 15s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
     environment:
       APP_ENV: ${APP_ENV:-dev}
       APP_BASE_URL: ${APP_BASE_URL:-http://localhost}
@@ -55,5 +69,210 @@ services:
       - ./static:/app/static:ro
       - ./uploads:/data/uploads
 
+  gateway:
+    image: nginx:1.25-alpine
+    ports: ["80:80"]
+    depends_on:
+      - backend
+      - taiga-gateway
+      - keycloak
+    volumes:
+      - ./gateway/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+  # --- Taiga stack (served under /kanban via the main gateway) ---
+  taiga-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${TAIGA_POSTGRES_DB:-taiga}
+      POSTGRES_USER: ${TAIGA_POSTGRES_USER:-taiga}
+      POSTGRES_PASSWORD: ${TAIGA_POSTGRES_PASSWORD:-taiga}
+    volumes:
+      - taiga-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  taiga-back:
+    build:
+      context: ./taiga/back
+      dockerfile: Dockerfile
+    environment:
+      DJANGO_SETTINGS_MODULE: settings.local
+      # DB
+      POSTGRES_DB: ${TAIGA_POSTGRES_DB:-taiga}
+      POSTGRES_USER: ${TAIGA_POSTGRES_USER:-taiga}
+      POSTGRES_PASSWORD: ${TAIGA_POSTGRES_PASSWORD:-taiga}
+      POSTGRES_HOST: taiga-db
+      # URLs (subpath mode)
+      TAIGA_SITES_SCHEME: ${TAIGA_SCHEME:-http}
+      TAIGA_SITES_DOMAIN: ${TAIGA_DOMAIN:-localhost}
+      TAIGA_SUBPATH: ${TAIGA_SUBPATH:-/kanban}
+      # Secret
+      TAIGA_SECRET_KEY: ${TAIGA_SECRET_KEY:-change_me_taiga_secret}
+      # Rabbit
+      RABBITMQ_USER: ${TAIGA_RABBITMQ_USER:-taiga}
+      RABBITMQ_PASS: ${TAIGA_RABBITMQ_PASS:-taiga}
+      # OIDC (Keycloak)
+      OIDC_RP_CLIENT_ID: ${TAIGA_OIDC_CLIENT_ID:-taiga}
+      OIDC_RP_CLIENT_SECRET: ${TAIGA_OIDC_CLIENT_SECRET:-change_me_taiga_oidc_client_secret}
+      # Authorization endpoint is visited by the browser, so it must be reachable from the user.
+      # Default to the public domain (TAIGA_DOMAIN) rather than the internal docker hostname.
+      OIDC_OP_AUTHORIZATION_ENDPOINT: ${TAIGA_OIDC_AUTH_ENDPOINT:-http://${TAIGA_DOMAIN:-localhost}/id/realms/opshub/protocol/openid-connect/auth}
+      OIDC_OP_TOKEN_ENDPOINT: ${TAIGA_OIDC_TOKEN_ENDPOINT:-http://keycloak:8080/id/realms/opshub/protocol/openid-connect/token}
+      OIDC_OP_USER_ENDPOINT: ${TAIGA_OIDC_USERINFO_ENDPOINT:-http://keycloak:8080/id/realms/opshub/protocol/openid-connect/userinfo}
+      OIDC_OP_JWKS_ENDPOINT: ${TAIGA_OIDC_JWKS_ENDPOINT:-http://keycloak:8080/id/realms/opshub/protocol/openid-connect/certs}
+      # Dev convenience (HTTP)
+      SESSION_COOKIE_SECURE: "False"
+      CSRF_COOKIE_SECURE: "False"
+    volumes:
+      - taiga-static-data:/taiga-back/static
+      - taiga-media-data:/taiga-back/media
+    depends_on:
+      taiga-db:
+        condition: service_healthy
+      taiga-events-rabbitmq:
+        condition: service_started
+      taiga-async-rabbitmq:
+        condition: service_started
+
+  taiga-front:
+    build:
+      context: ./taiga/front
+      dockerfile: Dockerfile
+    environment:
+      TAIGA_URL: "${TAIGA_SCHEME:-http}://${TAIGA_DOMAIN:-localhost}"
+      TAIGA_WEBSOCKETS_URL: "${TAIGA_WEBSOCKETS_SCHEME:-ws}://${TAIGA_DOMAIN:-localhost}"
+      TAIGA_SUBPATH: ${TAIGA_SUBPATH:-/kanban}
+    volumes:
+      - ./taiga/front/conf.json:/usr/share/nginx/html/conf.json:ro
+
+  taiga-events:
+    image: taigaio/taiga-events:latest
+    environment:
+      RABBITMQ_USER: ${TAIGA_RABBITMQ_USER:-taiga}
+      RABBITMQ_PASS: ${TAIGA_RABBITMQ_PASS:-taiga}
+      TAIGA_SECRET_KEY: ${TAIGA_SECRET_KEY:-change_me_taiga_secret}
+    depends_on:
+      taiga-events-rabbitmq:
+        condition: service_started
+
+  taiga-protected:
+    image: taigaio/taiga-protected:latest
+    environment:
+      MAX_AGE: ${TAIGA_ATTACHMENTS_MAX_AGE:-360}
+      SECRET_KEY: ${TAIGA_SECRET_KEY:-change_me_taiga_secret}
+
+  taiga-async:
+    image: taigaio/taiga-back:latest
+    entrypoint: ["/taiga-back/docker/async_entrypoint.sh"]
+    environment:
+      POSTGRES_DB: ${TAIGA_POSTGRES_DB:-taiga}
+      POSTGRES_USER: ${TAIGA_POSTGRES_USER:-taiga}
+      POSTGRES_PASSWORD: ${TAIGA_POSTGRES_PASSWORD:-taiga}
+      POSTGRES_HOST: taiga-db
+      TAIGA_SITES_SCHEME: ${TAIGA_SCHEME:-http}
+      TAIGA_SITES_DOMAIN: ${TAIGA_DOMAIN:-localhost}
+      TAIGA_SUBPATH: ${TAIGA_SUBPATH:-/kanban}
+      TAIGA_SECRET_KEY: ${TAIGA_SECRET_KEY:-change_me_taiga_secret}
+      RABBITMQ_USER: ${TAIGA_RABBITMQ_USER:-taiga}
+      RABBITMQ_PASS: ${TAIGA_RABBITMQ_PASS:-taiga}
+      OIDC_RP_CLIENT_ID: ${TAIGA_OIDC_CLIENT_ID:-taiga}
+      OIDC_RP_CLIENT_SECRET: ${TAIGA_OIDC_CLIENT_SECRET:-change_me_taiga_oidc_client_secret}
+      OIDC_OP_AUTHORIZATION_ENDPOINT: ${TAIGA_OIDC_AUTH_ENDPOINT:-http://keycloak:8080/id/realms/opshub/protocol/openid-connect/auth}
+      OIDC_OP_TOKEN_ENDPOINT: ${TAIGA_OIDC_TOKEN_ENDPOINT:-http://keycloak:8080/id/realms/opshub/protocol/openid-connect/token}
+      OIDC_OP_USER_ENDPOINT: ${TAIGA_OIDC_USERINFO_ENDPOINT:-http://keycloak:8080/id/realms/opshub/protocol/openid-connect/userinfo}
+      OIDC_OP_JWKS_ENDPOINT: ${TAIGA_OIDC_JWKS_ENDPOINT:-http://keycloak:8080/id/realms/opshub/protocol/openid-connect/certs}
+      SESSION_COOKIE_SECURE: "False"
+      CSRF_COOKIE_SECURE: "False"
+    volumes:
+      - taiga-static-data:/taiga-back/static
+      - taiga-media-data:/taiga-back/media
+    depends_on:
+      taiga-db:
+        condition: service_healthy
+      taiga-events-rabbitmq:
+        condition: service_started
+      taiga-async-rabbitmq:
+        condition: service_started
+
+  taiga-async-rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_ERLANG_COOKIE: ${TAIGA_RABBITMQ_ERLANG_COOKIE:-secret-erlang-cookie}
+      RABBITMQ_DEFAULT_USER: ${TAIGA_RABBITMQ_USER:-taiga}
+      RABBITMQ_DEFAULT_PASS: ${TAIGA_RABBITMQ_PASS:-taiga}
+      RABBITMQ_DEFAULT_VHOST: ${TAIGA_RABBITMQ_VHOST:-taiga}
+    hostname: taiga-async-rabbitmq
+    volumes:
+      - taiga-async-rabbitmq-data:/var/lib/rabbitmq
+
+  taiga-events-rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_ERLANG_COOKIE: ${TAIGA_RABBITMQ_ERLANG_COOKIE:-secret-erlang-cookie}
+      RABBITMQ_DEFAULT_USER: ${TAIGA_RABBITMQ_USER:-taiga}
+      RABBITMQ_DEFAULT_PASS: ${TAIGA_RABBITMQ_PASS:-taiga}
+      RABBITMQ_DEFAULT_VHOST: ${TAIGA_RABBITMQ_VHOST:-taiga}
+    hostname: taiga-events-rabbitmq
+    volumes:
+      - taiga-events-rabbitmq-data:/var/lib/rabbitmq
+
+  taiga-gateway:
+    image: nginx:1.25-alpine
+    expose: ["80"]
+    volumes:
+      - ./taiga/gateway/taiga.conf:/etc/nginx/conf.d/default.conf:ro
+      - taiga-static-data:/taiga/static
+      - taiga-media-data:/taiga/media
+    depends_on:
+      - taiga-front
+      - taiga-back
+      - taiga-events
+
+  taiga-manage:
+    image: taigaio/taiga-back:latest
+    entrypoint: ["python", "manage.py"]
+    working_dir: /taiga-back
+    environment:
+      POSTGRES_DB: ${TAIGA_POSTGRES_DB:-taiga}
+      POSTGRES_USER: ${TAIGA_POSTGRES_USER:-taiga}
+      POSTGRES_PASSWORD: ${TAIGA_POSTGRES_PASSWORD:-taiga}
+      POSTGRES_HOST: taiga-db
+      TAIGA_SITES_SCHEME: ${TAIGA_SCHEME:-http}
+      TAIGA_SITES_DOMAIN: ${TAIGA_DOMAIN:-localhost}
+      TAIGA_SUBPATH: ${TAIGA_SUBPATH:-/kanban}
+      TAIGA_SECRET_KEY: ${TAIGA_SECRET_KEY:-change_me_taiga_secret}
+      RABBITMQ_USER: ${TAIGA_RABBITMQ_USER:-taiga}
+      RABBITMQ_PASS: ${TAIGA_RABBITMQ_PASS:-taiga}
+      SESSION_COOKIE_SECURE: "False"
+      CSRF_COOKIE_SECURE: "False"
+    volumes:
+      - taiga-static-data:/taiga-back/static
+      - taiga-media-data:/taiga-back/media
+    depends_on:
+      taiga-db:
+        condition: service_healthy
+
+  # --- Keycloak (served under /id via the main gateway) ---
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.5.0
+    command: ["start-dev", "--http-relative-path=/id", "--hostname-strict=false", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME:-localhost}
+      KC_PROXY: ${KEYCLOAK_PROXY_MODE:-edge}
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+      - ./keycloak/realm-opshub.json:/opt/keycloak/data/import/realm-opshub.json:ro
+
 volumes:
   pgdata:
+  taiga-static-data:
+  taiga-media-data:
+  taiga-db-data:
+  taiga-async-rabbitmq-data:
+  taiga-events-rabbitmq-data:
+  keycloak-data:

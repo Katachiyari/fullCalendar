@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import DashboardPage from './pages/DashboardPage'
-import KanbanPage from './pages/KanbanPage'
 import CalendarPage from './pages/CalendarPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -60,7 +59,7 @@ export default function App() {
         <div className="navbar-menu is-active">
           <div className="navbar-start">
             <NavLink className={({ isActive }) => `navbar-item ${isActive ? 'is-active has-text-weight-semibold' : ''}`} to="/">{t('nav.dashboard')}</NavLink>
-            <NavLink className={({ isActive }) => `navbar-item ${isActive ? 'is-active has-text-weight-semibold' : ''}`} to="/kanban">{t('nav.kanban')}</NavLink>
+            <a className="navbar-item" href="/kanban/">{t('nav.kanban')}</a>
             <NavLink className={({ isActive }) => `navbar-item ${isActive ? 'is-active has-text-weight-semibold' : ''}`} to="/calendar">{t('nav.calendar')}</NavLink>
 
             <NavLink className={({ isActive }) => `navbar-item ${isActive ? 'is-active has-text-weight-semibold' : ''}`} to="/ansible">{t('nav.ansible')}</NavLink>
@@ -101,7 +100,6 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/" element={<RequireAuth><DashboardPage /></RequireAuth>} />
-            <Route path="/kanban" element={<RequireAuth><KanbanPage /></RequireAuth>} />
             <Route path="/calendar" element={<RequireAuth><CalendarPage /></RequireAuth>} />
             <Route path="/ansible" element={<RequireAuth><AnsiblePage /></RequireAuth>} />
             <Route path="/server" element={<RequireAuth><ServerPage /></RequireAuth>} />

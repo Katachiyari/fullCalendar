@@ -3,8 +3,11 @@ from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import os
+import asyncio
+from sqlalchemy import text
 from app.database import engine
 from app.models import Base, User, Event, Group  # Import models
 from app.routers import events, users, auth, groups, server, ansible
@@ -46,6 +49,52 @@ app.add_middleware(
     allow_methods=["*"], 
     allow_headers=["*"]
 )
+
+
+@app.get("/healthz", include_in_schema=False)
+async def healthz():
+    """Liveness probe: process is up."""
+    return {"status": "ok"}
+
+
+@app.get("/readyz", include_in_schema=False)
+async def readyz():
+    """Readiness probe: dependencies are reachable (best-effort)."""
+
+    async def check_db() -> tuple[bool, str]:
+        try:
+            async with engine.connect() as conn:
+                await asyncio.wait_for(conn.execute(text("SELECT 1")), timeout=2.0)
+            return True, "ok"
+        except Exception as e:
+            return False, str(e)
+
+    async def check_redis() -> tuple[bool, str]:
+        url = os.getenv("REDIS_URL")
+        if not url:
+            return True, "skipped"
+        try:
+            from redis.asyncio import Redis
+
+            client = Redis.from_url(url, socket_connect_timeout=1, socket_timeout=1)
+            try:
+                await asyncio.wait_for(client.ping(), timeout=2.0)
+            finally:
+                await client.aclose()
+            return True, "ok"
+        except Exception as e:
+            return False, str(e)
+
+    db_ok, db_detail = await check_db()
+    redis_ok, redis_detail = await check_redis()
+
+    ok = db_ok and redis_ok
+    payload = {
+        "status": "ok" if ok else "degraded",
+        "db": {"ok": db_ok, "detail": db_detail},
+        "redis": {"ok": redis_ok, "detail": redis_detail},
+    }
+    return JSONResponse(content=payload, status_code=200 if ok else 503)
 
 # Une seule application front: on ne sert plus l'UI legacy en HTML sous /static.
 # (On garde la SPA v2/v3 servie par FastAPI, et on redirige /static/* pour compat.)

@@ -1,0 +1,376 @@
+ Image fullcalendar-taiga-front Building 
+ Image fullcalendar-taiga-back Building 
+ Image fullcalendar-backend Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.53kB done
+#1 DONE 0.0s
+
+#2 [taiga-front internal] load build definition from Dockerfile
+#2 transferring dockerfile: 625B done
+#2 DONE 0.0s
+
+#3 [backend internal] load build definition from Dockerfile
+#3 transferring dockerfile: 988B done
+#3 DONE 0.0s
+
+#4 [taiga-back internal] load build definition from Dockerfile
+#4 transferring dockerfile: 695B done
+#4 DONE 0.0s
+
+#5 [taiga-back internal] load metadata for docker.io/taigaio/taiga-back:latest
+#5 DONE 0.1s
+
+#6 [taiga-back internal] load .dockerignore
+#6 transferring context:
+#6 transferring context: 2B done
+#6 DONE 0.0s
+
+#7 [taiga-front internal] load metadata for docker.io/taigaio/taiga-front:latest
+#7 DONE 0.1s
+
+#8 [taiga-front internal] load metadata for docker.io/library/node:20-alpine
+#8 DONE 0.1s
+
+#9 [taiga-front internal] load .dockerignore
+#9 transferring context: 2B done
+#9 DONE 0.0s
+
+#10 [taiga-back internal] load build context
+#10 transferring context: 247B done
+#10 DONE 0.0s
+
+#11 [taiga-back 1/5] FROM docker.io/taigaio/taiga-back:latest@sha256:70ee08e4416c282437f55b5a5f48e8c3c10390022eac275999366728e227e961
+#11 resolve docker.io/taigaio/taiga-back:latest@sha256:70ee08e4416c282437f55b5a5f48e8c3c10390022eac275999366728e227e961 0.0s done
+#11 CACHED
+
+#12 [taiga-front stage-1 1/3] FROM docker.io/taigaio/taiga-front:latest@sha256:35e3345e2a0152e777543b1f5565fd4578804d39b57a4848fe41b723bcce5885
+#12 resolve docker.io/taigaio/taiga-front:latest@sha256:35e3345e2a0152e777543b1f5565fd4578804d39b57a4848fe41b723bcce5885 0.0s done
+#12 DONE 0.0s
+
+#13 [taiga-front stage-1 2/3] RUN mkdir -p /usr/share/nginx/html/plugins/oidc-auth/
+#13 CACHED
+
+#14 [taiga-front plugin_build 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#14 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.0s done
+#14 CACHED
+
+#15 [taiga-front plugin_build 2/8] RUN apk add --no-cache git python3 make g++
+#15 ...
+
+#14 [backend plugin_build 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#14 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.0s done
+#14 CACHED
+
+#16 [backend internal] load metadata for docker.io/library/python:3.12-slim
+#16 DONE 0.9s
+
+#17 [backend internal] load .dockerignore
+#17 transferring context: 2B done
+#17 DONE 0.0s
+
+#18 [backend stage-1 1/8] FROM docker.io/library/python:3.12-slim@sha256:a75662dfec8d90bd7161c91050be2e0a9b21d284f3b7a7253d5db25f7d583fb3
+#18 resolve docker.io/library/python:3.12-slim@sha256:a75662dfec8d90bd7161c91050be2e0a9b21d284f3b7a7253d5db25f7d583fb3 0.0s done
+#18 DONE 0.0s
+
+#15 [taiga-front plugin_build 2/8] RUN apk add --no-cache git python3 make g++
+#15 0.984 ( 1/40) Installing libstdc++-dev (15.2.0-r2)
+#15 ...
+
+#19 [backend internal] load build context
+#19 transferring context: 667.09kB 0.2s done
+#19 DONE 0.3s
+
+#20 [backend stage-1 4/8] COPY app/requirements.txt ./requirements.txt
+#20 CACHED
+
+#21 [backend frontend_build 5/6] COPY frontend/. ./
+#21 CACHED
+
+#22 [backend frontend_build 6/6] RUN npm run build
+#22 CACHED
+
+#23 [backend frontend_build 3/6] COPY frontend/package.json ./package.json
+#23 CACHED
+
+#24 [backend frontend_build 4/6] RUN npm install
+#24 CACHED
+
+#25 [backend stage-1 7/8] COPY static ./static
+#25 CACHED
+
+#26 [backend frontend_build 2/6] WORKDIR /frontend
+#26 CACHED
+
+#27 [backend stage-1 2/8] WORKDIR /app
+#27 CACHED
+
+#28 [backend stage-1 6/8] COPY app ./app
+#28 CACHED
+
+#29 [backend stage-1 3/8] RUN useradd -m -u 10001 appuser 	&& mkdir -p /data 	&& chown -R appuser:appuser /data
+#29 CACHED
+
+#30 [backend stage-1 5/8] RUN pip install --no-cache-dir -q -r requirements.txt
+#30 CACHED
+
+#31 [backend stage-1 8/8] COPY --from=frontend_build /frontend/dist ./v2_dist
+#31 CACHED
+
+#32 [backend] exporting to image
+#32 exporting layers done
+#32 exporting manifest sha256:aa1a7b48f661459dbd0690a8e9f6801ac9af292303dfbdbd7ed08b424227fd30 done
+#32 exporting config sha256:ca668b7a8f9669ef1d3b92b08cc68ef4cddfb1cf904e3e9a2b7344c88870a988 done
+#32 exporting attestation manifest sha256:89b2769882d8a29a97caa6e7e322d3a73ca99100228a9e7a53c8e463558c80b3 0.0s done
+#32 exporting manifest list sha256:9d536b9d428a469bf95b29de824a81bfb5c5612d77a9e658a15a51cbecf709ba 0.0s done
+#32 naming to docker.io/library/fullcalendar-backend:latest done
+#32 unpacking to docker.io/library/fullcalendar-backend:latest done
+#32 DONE 0.1s
+
+#15 [taiga-front plugin_build 2/8] RUN apk add --no-cache git python3 make g++
+#15 1.211 ( 2/40) Installing jansson (2.14.1-r0)
+#15 1.243 ( 3/40) Installing zstd-libs (1.5.7-r2)
+#15 ...
+
+#33 [backend] resolving provenance for metadata file
+#33 DONE 0.0s
+
+#15 [taiga-front plugin_build 2/8] RUN apk add --no-cache git python3 make g++
+#15 1.277 ( 4/40) Installing binutils (2.45.1-r0)
+#15 1.378 ( 5/40) Installing libgomp (15.2.0-r2)
+#15 1.424 ( 6/40) Installing libatomic (15.2.0-r2)
+#15 1.459 ( 7/40) Installing gmp (6.3.0-r4)
+#15 1.492 ( 8/40) Installing isl26 (0.26-r1)
+#15 1.534 ( 9/40) Installing mpfr4 (4.2.2-r0)
+#15 1.568 (10/40) Installing mpc1 (1.3.1-r1)
+#15 1.597 (11/40) Installing gcc (15.2.0-r2)
+#15 3.038 (12/40) Installing musl-dev (1.2.5-r21)
+#15 3.146 (13/40) Installing g++ (15.2.0-r2)
+#15 3.491 (14/40) Installing brotli-libs (1.2.0-r0)
+#15 3.558 (15/40) Installing c-ares (1.34.6-r0)
+#15 3.644 (16/40) Installing libunistring (1.4.1-r0)
+#15 3.732 (17/40) Installing libidn2 (2.3.8-r0)
+#15 3.815 (18/40) Installing nghttp2-libs (1.68.0-r0)
+#15 3.881 (19/40) Installing nghttp3 (1.13.1-r0)
+#15 3.935 (20/40) Installing libpsl (0.21.5-r3)
+#15 3.998 (21/40) Installing libcurl (8.17.0-r1)
+#15 4.072 (22/40) Installing libexpat (2.7.3-r0)
+#15 4.125 (23/40) Installing pcre2 (10.47-r0)
+#15 4.194 (24/40) Installing git (2.52.0-r0)
+#15 4.368 (25/40) Installing git-init-template (2.52.0-r0)
+#15 4.427 (26/40) Installing make (4.4.1-r3)
+#15 4.504 (27/40) Installing libbz2 (1.0.8-r6)
+#15 4.548 (28/40) Installing libffi (3.5.2-r0)
+#15 4.588 (29/40) Installing gdbm (1.26-r0)
+#15 4.617 (30/40) Installing xz-libs (5.8.1-r0)
+#15 4.646 (31/40) Installing mpdecimal (4.0.1-r0)
+#15 4.679 (32/40) Installing ncurses-terminfo-base (6.5_p20251123-r0)
+#15 4.709 (33/40) Installing libncursesw (6.5_p20251123-r0)
+#15 4.748 (34/40) Installing libpanelw (6.5_p20251123-r0)
+#15 4.788 (35/40) Installing readline (8.3.1-r0)
+#15 4.848 (36/40) Installing sqlite-libs (3.51.1-r0)
+#15 4.899 (37/40) Installing python3 (3.12.12-r0)
+#15 5.129 (38/40) Installing python3-pycache-pyc0 (3.12.12-r0)
+#15 5.261 (39/40) Installing pyc (3.12.12-r0)
+#15 5.261 (40/40) Installing python3-pyc (3.12.12-r0)
+#15 5.261 Executing busybox-1.37.0-r30.trigger
+#15 5.301 OK: 312.7 MiB in 58 packages
+#15 DONE 6.6s
+
+#34 [taiga-back 2/5] RUN apt-get update 	&& apt-get install -y --no-install-recommends git ca-certificates 	&& rm -rf /var/lib/apt/lists/*
+#34 0.655 Get:1 http://deb.debian.org/debian trixie InRelease [140 kB]
+#34 0.752 Get:2 http://deb.debian.org/debian trixie-updates InRelease [47.3 kB]
+#34 0.788 Get:3 http://deb.debian.org/debian-security trixie-security InRelease [43.4 kB]
+#34 0.828 Get:4 http://deb.debian.org/debian trixie/main amd64 Packages [9670 kB]
+#34 1.832 Get:5 http://deb.debian.org/debian trixie-updates/main amd64 Packages [5412 B]
+#34 1.858 Get:6 http://deb.debian.org/debian-security trixie-security/main amd64 Packages [94.5 kB]
+#34 2.669 Fetched 10.0 MB in 2s (4107 kB/s)
+#34 2.669 Reading package lists...
+#34 3.255 Reading package lists...
+#34 3.806 Building dependency tree...
+#34 3.933 Reading state information...
+#34 4.156 ca-certificates is already the newest version (20250419).
+#34 4.156 The following additional packages will be installed:
+#34 4.156   git-man libbrotli1 libcurl3t64-gnutls liberror-perl libexpat1
+#34 4.156   libgdbm-compat4t64 libnghttp2-14 libnghttp3-9 libngtcp2-16
+#34 4.157   libngtcp2-crypto-gnutls8 libperl5.40 libpsl5t64 librtmp1 libssh2-1t64 perl
+#34 4.157   perl-modules-5.40
+#34 4.159 Suggested packages:
+#34 4.159   gettext-base git-doc git-email git-gui gitk gitweb git-cvs git-mediawiki
+#34 4.159   git-svn sensible-utils perl-doc libterm-readline-gnu-perl
+#34 4.159   | libterm-readline-perl-perl make libtap-harness-archive-perl
+#34 4.159 Recommended packages:
+#34 4.159   patch less ssh-client publicsuffix
+#34 4.300 The following NEW packages will be installed:
+#34 4.300   git git-man libbrotli1 libcurl3t64-gnutls liberror-perl libexpat1
+#34 4.300   libgdbm-compat4t64 libnghttp2-14 libnghttp3-9 libngtcp2-16
+#34 4.301   libngtcp2-crypto-gnutls8 libperl5.40 libpsl5t64 librtmp1 libssh2-1t64 perl
+#34 4.301   perl-modules-5.40
+#34 4.413 0 upgraded, 17 newly installed, 0 to remove and 6 not upgraded.
+#34 4.413 Need to get 20.2 MB of archives.
+#34 4.413 After this operation, 108 MB of additional disk space will be used.
+#34 4.413 Get:1 http://deb.debian.org/debian trixie/main amd64 libexpat1 amd64 2.7.1-2 [108 kB]
+#34 4.533 Get:2 http://deb.debian.org/debian trixie/main amd64 perl-modules-5.40 all 5.40.1-6 [3019 kB]
+#34 4.665 Get:3 http://deb.debian.org/debian trixie/main amd64 libgdbm-compat4t64 amd64 1.24-2 [50.3 kB]
+#34 4.665 Get:4 http://deb.debian.org/debian trixie/main amd64 libperl5.40 amd64 5.40.1-6 [4341 kB]
+#34 4.756 Get:5 http://deb.debian.org/debian trixie/main amd64 perl amd64 5.40.1-6 [267 kB]
+#34 4.816 Get:6 http://deb.debian.org/debian trixie/main amd64 libbrotli1 amd64 1.1.0-2+b7 [307 kB]
+#34 4.822 Get:7 http://deb.debian.org/debian trixie/main amd64 libnghttp2-14 amd64 1.64.0-1.1 [76.0 kB]
+#34 4.823 Get:8 http://deb.debian.org/debian trixie/main amd64 libnghttp3-9 amd64 1.8.0-1 [67.7 kB]
+#34 4.824 Get:9 http://deb.debian.org/debian trixie/main amd64 libngtcp2-16 amd64 1.11.0-1 [131 kB]
+#34 4.828 Get:10 http://deb.debian.org/debian trixie/main amd64 libngtcp2-crypto-gnutls8 amd64 1.11.0-1 [29.3 kB]
+#34 4.829 Get:11 http://deb.debian.org/debian trixie/main amd64 libpsl5t64 amd64 0.21.2-1.1+b1 [57.2 kB]
+#34 4.830 Get:12 http://deb.debian.org/debian trixie/main amd64 librtmp1 amd64 2.4+20151223.gitfa8646d.1-2+b5 [58.8 kB]
+#34 4.831 Get:13 http://deb.debian.org/debian trixie/main amd64 libssh2-1t64 amd64 1.11.1-1 [245 kB]
+#34 4.900 Get:14 http://deb.debian.org/debian trixie/main amd64 libcurl3t64-gnutls amd64 8.14.1-2+deb13u2 [383 kB]
+#34 4.904 Get:15 http://deb.debian.org/debian trixie/main amd64 liberror-perl all 0.17030-1 [26.9 kB]
+#34 4.905 Get:16 http://deb.debian.org/debian trixie/main amd64 git-man all 1:2.47.3-0+deb13u1 [2205 kB]
+#34 5.010 Get:17 http://deb.debian.org/debian trixie/main amd64 git amd64 1:2.47.3-0+deb13u1 [8862 kB]
+#34 6.325 Fetched 20.2 MB in 1s (18.1 MB/s)
+#34 6.483 Selecting previously unselected package libexpat1:amd64.
+#34 6.483 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 6589 files and directories currently installed.)
+#34 6.488 Preparing to unpack .../00-libexpat1_2.7.1-2_amd64.deb ...
+#34 6.544 Unpacking libexpat1:amd64 (2.7.1-2) ...
+#34 ...
+
+#35 [taiga-front plugin_build 3/8] WORKDIR /src
+#35 DONE 0.1s
+
+#34 [taiga-back 2/5] RUN apt-get update 	&& apt-get install -y --no-install-recommends git ca-certificates 	&& rm -rf /var/lib/apt/lists/*
+#34 6.642 Selecting previously unselected package perl-modules-5.40.
+#34 6.643 Preparing to unpack .../01-perl-modules-5.40_5.40.1-6_all.deb ...
+#34 6.650 Unpacking perl-modules-5.40 (5.40.1-6) ...
+#34 ...
+
+#36 [taiga-front plugin_build 4/8] RUN git clone --depth 1 https://github.com/taigaio/taiga-contrib-oidc-auth.git
+#36 0.188 Cloning into 'taiga-contrib-oidc-auth'...
+#36 ...
+
+#34 [taiga-back 2/5] RUN apt-get update 	&& apt-get install -y --no-install-recommends git ca-certificates 	&& rm -rf /var/lib/apt/lists/*
+#34 6.922 Selecting previously unselected package libgdbm-compat4t64:amd64.
+#34 6.923 Preparing to unpack .../02-libgdbm-compat4t64_1.24-2_amd64.deb ...
+#34 6.929 Unpacking libgdbm-compat4t64:amd64 (1.24-2) ...
+#34 6.970 Selecting previously unselected package libperl5.40:amd64.
+#34 6.971 Preparing to unpack .../03-libperl5.40_5.40.1-6_amd64.deb ...
+#34 6.977 Unpacking libperl5.40:amd64 (5.40.1-6) ...
+#34 7.273 Selecting previously unselected package perl.
+#34 7.274 Preparing to unpack .../04-perl_5.40.1-6_amd64.deb ...
+#34 7.279 Unpacking perl (5.40.1-6) ...
+#34 7.328 Selecting previously unselected package libbrotli1:amd64.
+#34 7.329 Preparing to unpack .../05-libbrotli1_1.1.0-2+b7_amd64.deb ...
+#34 7.333 Unpacking libbrotli1:amd64 (1.1.0-2+b7) ...
+#34 7.386 Selecting previously unselected package libnghttp2-14:amd64.
+#34 7.387 Preparing to unpack .../06-libnghttp2-14_1.64.0-1.1_amd64.deb ...
+#34 7.392 Unpacking libnghttp2-14:amd64 (1.64.0-1.1) ...
+#34 7.434 Selecting previously unselected package libnghttp3-9:amd64.
+#34 7.435 Preparing to unpack .../07-libnghttp3-9_1.8.0-1_amd64.deb ...
+#34 7.440 Unpacking libnghttp3-9:amd64 (1.8.0-1) ...
+#34 7.483 Selecting previously unselected package libngtcp2-16:amd64.
+#34 7.484 Preparing to unpack .../08-libngtcp2-16_1.11.0-1_amd64.deb ...
+#34 7.488 Unpacking libngtcp2-16:amd64 (1.11.0-1) ...
+#34 7.535 Selecting previously unselected package libngtcp2-crypto-gnutls8:amd64.
+#34 7.536 Preparing to unpack .../09-libngtcp2-crypto-gnutls8_1.11.0-1_amd64.deb ...
+#34 7.541 Unpacking libngtcp2-crypto-gnutls8:amd64 (1.11.0-1) ...
+#34 7.582 Selecting previously unselected package libpsl5t64:amd64.
+#34 7.583 Preparing to unpack .../10-libpsl5t64_0.21.2-1.1+b1_amd64.deb ...
+#34 7.587 Unpacking libpsl5t64:amd64 (0.21.2-1.1+b1) ...
+#34 7.628 Selecting previously unselected package librtmp1:amd64.
+#34 7.629 Preparing to unpack .../11-librtmp1_2.4+20151223.gitfa8646d.1-2+b5_amd64.deb ...
+#34 7.634 Unpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b5) ...
+#34 7.676 Selecting previously unselected package libssh2-1t64:amd64.
+#34 7.677 Preparing to unpack .../12-libssh2-1t64_1.11.1-1_amd64.deb ...
+#34 7.682 Unpacking libssh2-1t64:amd64 (1.11.1-1) ...
+#34 7.728 Selecting previously unselected package libcurl3t64-gnutls:amd64.
+#34 7.729 Preparing to unpack .../13-libcurl3t64-gnutls_8.14.1-2+deb13u2_amd64.deb ...
+#34 7.733 Unpacking libcurl3t64-gnutls:amd64 (8.14.1-2+deb13u2) ...
+#34 7.780 Selecting previously unselected package liberror-perl.
+#34 7.781 Preparing to unpack .../14-liberror-perl_0.17030-1_all.deb ...
+#34 7.786 Unpacking liberror-perl (0.17030-1) ...
+#34 7.821 Selecting previously unselected package git-man.
+#34 7.822 Preparing to unpack .../15-git-man_1%3a2.47.3-0+deb13u1_all.deb ...
+#34 7.830 Unpacking git-man (1:2.47.3-0+deb13u1) ...
+#34 7.908 Selecting previously unselected package git.
+#34 7.909 Preparing to unpack .../16-git_1%3a2.47.3-0+deb13u1_amd64.deb ...
+#34 7.918 Unpacking git (1:2.47.3-0+deb13u1) ...
+#34 8.215 Setting up libexpat1:amd64 (2.7.1-2) ...
+#34 8.229 Setting up libgdbm-compat4t64:amd64 (1.24-2) ...
+#34 8.245 Setting up libbrotli1:amd64 (1.1.0-2+b7) ...
+#34 8.259 Setting up libpsl5t64:amd64 (0.21.2-1.1+b1) ...
+#34 8.275 Setting up libnghttp2-14:amd64 (1.64.0-1.1) ...
+#34 8.289 Setting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b5) ...
+#34 8.303 Setting up libnghttp3-9:amd64 (1.8.0-1) ...
+#34 8.318 Setting up perl-modules-5.40 (5.40.1-6) ...
+#34 8.335 Setting up git-man (1:2.47.3-0+deb13u1) ...
+#34 8.349 Setting up libngtcp2-16:amd64 (1.11.0-1) ...
+#34 8.364 Setting up libssh2-1t64:amd64 (1.11.1-1) ...
+#34 8.379 Setting up libngtcp2-crypto-gnutls8:amd64 (1.11.0-1) ...
+#34 8.394 Setting up libcurl3t64-gnutls:amd64 (8.14.1-2+deb13u2) ...
+#34 8.409 Setting up libperl5.40:amd64 (5.40.1-6) ...
+#34 8.424 Setting up perl (5.40.1-6) ...
+#34 8.449 Setting up liberror-perl (0.17030-1) ...
+#34 8.464 Setting up git (1:2.47.3-0+deb13u1) ...
+#34 8.488 Processing triggers for libc-bin (2.41-12) ...
+#34 DONE 8.8s
+
+#37 [taiga-back 3/5] RUN pip install --no-cache-dir mozilla-django-oidc 	&& pip install --no-cache-dir "git+https://github.com/taigaio/taiga-contrib-oidc-auth.git#subdirectory=back"
+#37 0.996 Collecting mozilla-django-oidc
+#37 1.222   Downloading mozilla_django_oidc-5.0.2-py3-none-any.whl.metadata (8.6 kB)
+#37 1.432 Collecting Django>=4.2 (from mozilla-django-oidc)
+#37 1.498   Downloading django-5.2.10-py3-none-any.whl.metadata (4.1 kB)
+#37 1.500 Requirement already satisfied: pyjwt in /opt/venv/lib/python3.11/site-packages (from mozilla-django-oidc) (2.10.1)
+#37 1.501 Requirement already satisfied: requests in /opt/venv/lib/python3.11/site-packages (from mozilla-django-oidc) (2.32.5)
+#37 1.501 Requirement already satisfied: cryptography in /opt/venv/lib/python3.11/site-packages (from mozilla-django-oidc) (46.0.2)
+#37 1.502 Requirement already satisfied: asgiref>=3.8.1 in /opt/venv/lib/python3.11/site-packages (from Django>=4.2->mozilla-django-oidc) (3.10.0)
+#37 1.502 Requirement already satisfied: sqlparse>=0.3.1 in /opt/venv/lib/python3.11/site-packages (from Django>=4.2->mozilla-django-oidc) (0.5.3)
+#37 1.505 Requirement already satisfied: cffi>=2.0.0 in /opt/venv/lib/python3.11/site-packages (from cryptography->mozilla-django-oidc) (2.0.0)
+#37 1.508 Requirement already satisfied: pycparser in /opt/venv/lib/python3.11/site-packages (from cffi>=2.0.0->cryptography->mozilla-django-oidc) (2.23)
+#37 1.510 Requirement already satisfied: charset_normalizer<4,>=2 in /opt/venv/lib/python3.11/site-packages (from requests->mozilla-django-oidc) (3.4.3)
+#37 1.511 Requirement already satisfied: idna<4,>=2.5 in /opt/venv/lib/python3.11/site-packages (from requests->mozilla-django-oidc) (3.10)
+#37 1.511 Requirement already satisfied: urllib3<3,>=1.21.1 in /opt/venv/lib/python3.11/site-packages (from requests->mozilla-django-oidc) (2.5.0)
+#37 1.512 Requirement already satisfied: certifi>=2017.4.17 in /opt/venv/lib/python3.11/site-packages (from requests->mozilla-django-oidc) (2025.10.5)
+#37 1.587 Downloading mozilla_django_oidc-5.0.2-py3-none-any.whl (25 kB)
+#37 1.668 Downloading django-5.2.10-py3-none-any.whl (8.3 MB)
+#37 2.532    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8.3/8.3 MB 10.7 MB/s  0:00:00
+#37 2.655 Installing collected packages: Django, mozilla-django-oidc
+#37 2.656   Attempting uninstall: Django
+#37 2.658     Found existing installation: Django 3.2.25
+#37 2.854     Uninstalling Django-3.2.25:
+#37 11.52       Successfully uninstalled Django-3.2.25
+#37 15.13 
+#37 15.13 Successfully installed Django-5.2.10 mozilla-django-oidc-5.0.2
+#37 15.39 
+#37 15.39 [notice] A new release of pip is available: 25.2 -> 25.3
+#37 15.39 [notice] To update, run: pip install --upgrade pip
+#37 16.05 Collecting git+https://github.com/taigaio/taiga-contrib-oidc-auth.git#subdirectory=back
+#37 16.05   Cloning https://github.com/taigaio/taiga-contrib-oidc-auth.git to /tmp/pip-req-build-91d83r8b
+#37 16.05   Running command git clone --filter=blob:none --quiet https://github.com/taigaio/taiga-contrib-oidc-auth.git /tmp/pip-req-build-91d83r8b
+#37 ...
+
+#36 [taiga-front plugin_build 4/8] RUN git clone --depth 1 https://github.com/taigaio/taiga-contrib-oidc-auth.git
+#36 136.5 fatal: unable to access 'https://github.com/taigaio/taiga-contrib-oidc-auth.git/': Failed to connect to github.com port 443 after 136297 ms: Could not connect to server
+#36 ERROR: process "/bin/sh -c git clone --depth 1 https://github.com/taigaio/taiga-contrib-oidc-auth.git" did not complete successfully: exit code: 128
+
+#37 [taiga-back 3/5] RUN pip install --no-cache-dir mozilla-django-oidc 	&& pip install --no-cache-dir "git+https://github.com/taigaio/taiga-contrib-oidc-auth.git#subdirectory=back"
+#37 CANCELED
+------
+ > [taiga-front plugin_build 4/8] RUN git clone --depth 1 https://github.com/taigaio/taiga-contrib-oidc-auth.git:
+0.188 Cloning into 'taiga-contrib-oidc-auth'...
+136.5 fatal: unable to access 'https://github.com/taigaio/taiga-contrib-oidc-auth.git/': Failed to connect to github.com port 443 after 136297 ms: Could not connect to server
+------
+Dockerfile:7
+
+--------------------
+
+   5 |     
+
+   6 |     # Build the Taiga OIDC frontend plugin
+
+   7 | >>> RUN git clone --depth 1 https://github.com/taigaio/taiga-contrib-oidc-auth.git
+
+   8 |     WORKDIR /src/taiga-contrib-oidc-auth/front
+
+   9 |     
+
+--------------------
+
+target taiga-front: failed to solve: process "/bin/sh -c git clone --depth 1 https://github.com/taigaio/taiga-contrib-oidc-auth.git" did not complete successfully: exit code: 128
+

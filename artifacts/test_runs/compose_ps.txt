@@ -1,0 +1,15 @@
+NAME                                   IMAGE                              COMMAND                  SERVICE                 CREATED              STATUS                        PORTS
+fullcalendar-backend-1                 fullcalendar-backend               "uvicorn app.main:ap…"   backend                 About a minute ago   Up 55 seconds (healthy)       8000/tcp
+fullcalendar-gateway-1                 nginx:1.25-alpine                  "/docker-entrypoint.…"   gateway                 About a minute ago   Up 55 seconds                 0.0.0.0:80->80/tcp, [::]:80->80/tcp
+fullcalendar-keycloak-1                quay.io/keycloak/keycloak:26.5.0   "/opt/keycloak/bin/k…"   keycloak                About a minute ago   Up About a minute             8080/tcp, 8443/tcp, 9000/tcp
+fullcalendar-postgres-1                postgres:16-alpine                 "docker-entrypoint.s…"   postgres                About a minute ago   Up About a minute (healthy)   0.0.0.0:5433->5432/tcp, [::]:5433->5432/tcp
+fullcalendar-redis-1                   redis:7-alpine                     "docker-entrypoint.s…"   redis                   About a minute ago   Up About a minute (healthy)   0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp
+fullcalendar-taiga-async-1             taigaio/taiga-back:latest          "/taiga-back/docker/…"   taiga-async             About a minute ago   Up 56 seconds                 8000/tcp
+fullcalendar-taiga-async-rabbitmq-1    rabbitmq:3.13-management-alpine    "docker-entrypoint.s…"   taiga-async-rabbitmq    About a minute ago   Up About a minute             4369/tcp, 5671-5672/tcp, 15671-15672/tcp, 15691-15692/tcp, 25672/tcp
+fullcalendar-taiga-back-1              taigaio/taiga-back:latest          "./docker/entrypoint…"   taiga-back              About a minute ago   Up 56 seconds                 8000/tcp
+fullcalendar-taiga-db-1                postgres:16-alpine                 "docker-entrypoint.s…"   taiga-db                About a minute ago   Up About a minute (healthy)   5432/tcp
+fullcalendar-taiga-events-1            taigaio/taiga-events:latest        "./docker/entrypoint…"   taiga-events            About a minute ago   Up About a minute             8888/tcp
+fullcalendar-taiga-events-rabbitmq-1   rabbitmq:3.13-management-alpine    "docker-entrypoint.s…"   taiga-events-rabbitmq   About a minute ago   Up About a minute             4369/tcp, 5671-5672/tcp, 15671-15672/tcp, 15691-15692/tcp, 25672/tcp
+fullcalendar-taiga-front-1             taigaio/taiga-front:latest         "/docker-entrypoint.…"   taiga-front             About a minute ago   Up About a minute             80/tcp
+fullcalendar-taiga-gateway-1           nginx:1.25-alpine                  "/docker-entrypoint.…"   taiga-gateway           About a minute ago   Up 56 seconds                 80/tcp
+fullcalendar-taiga-protected-1         taigaio/taiga-protected:latest     "./docker/entrypoint…"   taiga-protected         About a minute ago   Up About a minute             8003/tcp

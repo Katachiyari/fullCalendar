@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      # Tests use sqlite via tests/conftest.py; keep env minimal.
+      APP_ENV: test
+      JWT_SECRET: test-secret
+      REDIS_URL: ""
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r app/requirements.txt
+          python -m pip install pytest pytest-asyncio pip-audit bandit
+
+      - name: Pytest
+        run: |
+          python -m pytest -q tests
+
+      - name: pip-audit (best-effort)
+        run: |
+          python -m pip_audit -r app/requirements.txt || true
+
+      - name: bandit (best-effort)
+        run: |
+          python -m bandit -q -r app || true

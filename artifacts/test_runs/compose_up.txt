@@ -1,0 +1,152 @@
+ Image fullcalendar-backend Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 546B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 988B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:20-alpine
+#3 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/library/python:3.12-slim
+#4 DONE 0.5s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 2B done
+#5 DONE 0.0s
+
+#6 [stage-1 1/8] FROM docker.io/library/python:3.12-slim@sha256:a75662dfec8d90bd7161c91050be2e0a9b21d284f3b7a7253d5db25f7d583fb3
+#6 resolve docker.io/library/python:3.12-slim@sha256:a75662dfec8d90bd7161c91050be2e0a9b21d284f3b7a7253d5db25f7d583fb3 0.0s done
+#6 DONE 0.0s
+
+#7 [frontend_build 1/6] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#7 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.0s done
+#7 DONE 0.0s
+
+#8 [internal] load build context
+#8 transferring context: 667.09kB 0.2s done
+#8 DONE 0.2s
+
+#9 [frontend_build 6/6] RUN npm run build
+#9 CACHED
+
+#10 [stage-1 5/8] RUN pip install --no-cache-dir -q -r requirements.txt
+#10 CACHED
+
+#11 [frontend_build 3/6] COPY frontend/package.json ./package.json
+#11 CACHED
+
+#12 [frontend_build 5/6] COPY frontend/. ./
+#12 CACHED
+
+#13 [stage-1 7/8] COPY static ./static
+#13 CACHED
+
+#14 [frontend_build 4/6] RUN npm install
+#14 CACHED
+
+#15 [stage-1 4/8] COPY app/requirements.txt ./requirements.txt
+#15 CACHED
+
+#16 [stage-1 6/8] COPY app ./app
+#16 CACHED
+
+#17 [frontend_build 2/6] WORKDIR /frontend
+#17 CACHED
+
+#18 [stage-1 3/8] RUN useradd -m -u 10001 appuser 	&& mkdir -p /data 	&& chown -R appuser:appuser /data
+#18 CACHED
+
+#19 [stage-1 2/8] WORKDIR /app
+#19 CACHED
+
+#20 [stage-1 8/8] COPY --from=frontend_build /frontend/dist ./v2_dist
+#20 CACHED
+
+#21 exporting to image
+#21 exporting layers done
+#21 exporting manifest sha256:aa1a7b48f661459dbd0690a8e9f6801ac9af292303dfbdbd7ed08b424227fd30 done
+#21 exporting config sha256:ca668b7a8f9669ef1d3b92b08cc68ef4cddfb1cf904e3e9a2b7344c88870a988 done
+#21 exporting attestation manifest sha256:46d4abbf193a2d0c6db8fbf9739a53614981c293ff337da875e45464c25b6284 0.0s done
+#21 exporting manifest list sha256:959d9ba6d37a003b2ddfc46c116da2203b65d5afd445dbc4cd0b223c520ce953 0.0s done
+#21 naming to docker.io/library/fullcalendar-backend:latest done
+#21 unpacking to docker.io/library/fullcalendar-backend:latest done
+#21 DONE 0.1s
+
+#22 resolving provenance for metadata file
+#22 DONE 0.0s
+ Image fullcalendar-backend Built 
+ Network fullcalendar_default Creating 
+ Network fullcalendar_default Created 
+ Container fullcalendar-taiga-front-1 Creating 
+ Container fullcalendar-taiga-protected-1 Creating 
+ Container fullcalendar-keycloak-1 Creating 
+ Container fullcalendar-taiga-db-1 Creating 
+ Container fullcalendar-taiga-events-rabbitmq-1 Creating 
+ Container fullcalendar-taiga-async-rabbitmq-1 Creating 
+ Container fullcalendar-postgres-1 Creating 
+ Container fullcalendar-redis-1 Creating 
+ Container fullcalendar-taiga-front-1 Created 
+ Container fullcalendar-taiga-protected-1 Created 
+ Container fullcalendar-keycloak-1 Created 
+ Container fullcalendar-redis-1 Created 
+ Container fullcalendar-taiga-db-1 Created 
+ Container fullcalendar-taiga-manage-1 Creating 
+ Container fullcalendar-taiga-events-rabbitmq-1 Created 
+ Container fullcalendar-taiga-events-1 Creating 
+ Container fullcalendar-taiga-async-rabbitmq-1 Created 
+ Container fullcalendar-taiga-async-1 Creating 
+ Container fullcalendar-taiga-back-1 Creating 
+ Container fullcalendar-postgres-1 Created 
+ Container fullcalendar-backend-1 Creating 
+ Container fullcalendar-taiga-manage-1 Created 
+ Container fullcalendar-taiga-back-1 Created 
+ Container fullcalendar-taiga-async-1 Created 
+ Container fullcalendar-taiga-events-1 Created 
+ Container fullcalendar-taiga-gateway-1 Creating 
+ Container fullcalendar-backend-1 Created 
+ Container fullcalendar-taiga-gateway-1 Created 
+ Container fullcalendar-gateway-1 Creating 
+ Container fullcalendar-gateway-1 Created 
+ Container fullcalendar-taiga-protected-1 Starting 
+ Container fullcalendar-taiga-db-1 Starting 
+ Container fullcalendar-postgres-1 Starting 
+ Container fullcalendar-taiga-front-1 Starting 
+ Container fullcalendar-taiga-events-rabbitmq-1 Starting 
+ Container fullcalendar-redis-1 Starting 
+ Container fullcalendar-keycloak-1 Starting 
+ Container fullcalendar-taiga-async-rabbitmq-1 Starting 
+ Container fullcalendar-taiga-db-1 Started 
+ Container fullcalendar-taiga-db-1 Waiting 
+ Container fullcalendar-postgres-1 Started 
+ Container fullcalendar-taiga-protected-1 Started 
+ Container fullcalendar-taiga-async-rabbitmq-1 Started 
+ Container fullcalendar-taiga-events-rabbitmq-1 Started 
+ Container fullcalendar-taiga-events-1 Starting 
+ Container fullcalendar-taiga-db-1 Waiting 
+ Container fullcalendar-taiga-db-1 Waiting 
+ Container fullcalendar-keycloak-1 Started 
+ Container fullcalendar-redis-1 Started 
+ Container fullcalendar-postgres-1 Waiting 
+ Container fullcalendar-redis-1 Waiting 
+ Container fullcalendar-taiga-front-1 Started 
+ Container fullcalendar-taiga-events-1 Started 
+ Container fullcalendar-taiga-db-1 Healthy 
+ Container fullcalendar-taiga-async-1 Starting 
+ Container fullcalendar-taiga-db-1 Healthy 
+ Container fullcalendar-taiga-back-1 Starting 
+ Container fullcalendar-postgres-1 Healthy 
+ Container fullcalendar-taiga-db-1 Healthy 
+ Container fullcalendar-taiga-manage-1 Starting 
+ Container fullcalendar-taiga-back-1 Started 
+ Container fullcalendar-taiga-gateway-1 Starting 
+ Container fullcalendar-taiga-async-1 Started 
+ Container fullcalendar-redis-1 Healthy 
+ Container fullcalendar-backend-1 Starting 
+ Container fullcalendar-taiga-gateway-1 Started 
+ Container fullcalendar-taiga-manage-1 Started 
+ Container fullcalendar-backend-1 Started 
+ Container fullcalendar-gateway-1 Starting 
+ Container fullcalendar-gateway-1 Started 

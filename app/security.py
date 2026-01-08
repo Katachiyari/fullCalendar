@@ -6,7 +6,8 @@ import jwt
 import bcrypt
 
 # Configuration
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production-min-32-chars")
+# Backward compatible: prefer JWT_SECRET (docker-compose) but accept SECRET_KEY.
+SECRET_KEY = os.getenv("JWT_SECRET") or os.getenv("SECRET_KEY") or "your-secret-key-change-in-production-min-32-chars"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24h
 
