@@ -1,47 +1,334 @@
+Scanner l'app pour qu'elle respect les recommandation de securité ANSI et les trois piliers de la CIA TRIAD Front et back ?
+Nettoyer l'appli et la mettre en mode MVC*
+Verifier les layers docker sécurité et optimisation
+Est ce que Docker HDI ?
+Est ce qu'on peut crypté l'app ou une partie ?
+Est ce que les secrets sont sécurisé ?*
+HTTPS *
+controle qualité pour savoir si tout fonctionne.
+Quels sont les outils pour scanner la vulnérabilité de mon APP.
+Quels méthode DevSecOps je dois penser ?
+Faire un audit de l'app. Sécurité, rapidité, fonctionnabilité, evolution dans le temps.
+Préparer Ansible et terraform
+Installé k3s et deployer cette app dedans.
+Onglet serveur, on doit pouvoir monitoré en ajoutant une IP.
+Les alertes doivent remonter sous forme de tickets.
+Lorsqu'on clique sur l'onglet FR/ENG ça doit s'appliquer a tout le site
+Ajout de thèmes, un dark modern et un brillant modern
 
-Test de nouveaux utilisateurs.
-ok 
+# Cahier des charges — OpsHub (Calendrier & Outils Ops)
 
+Date : 8 janvier 2026
 
-Dans la fenetre "prochains evenements"
-Je veux pouvoir cliquer sur le RDV, et l'affiché dans un modal.
-ok
+## 1. Contexte et objectifs
 
-ajout une synchro avec Google et Microsoft
+OpsHub est une application web interne destinée à centraliser :
+- la planification des interventions (calendrier d’équipe),
+- des outils “Ops” orientés exploitation (analyse d’inventaire Ansible, vue serveur),
+- une administration des utilisateurs et des droits.
 
-Gestion d'alerte POPUP et par mail
+Objectifs :
+- Permettre aux équipes de créer, consulter et gérer des rendez‑vous (RDV) / jobs planifiés.
+- Appliquer des règles de sécurité et de droits (rôles + groupes métiers).
+- Donner aux administrateurs un point de contrôle (utilisateurs, ressources serveur, uploads).
+- Simplifier l’exploitation (lecture d’inventaires Ansible déposés sur un volume).
 
-vérification d'email a l'inscription, une fois vérifié le compte a un bagde email vérifié.
-Temps que le mail n'est pas vérifié il est en invité et ne peut pas créer de RDV
+## 2. Périmètre
 
-Ajouter le drag and drop sur les RDV, qui gerer automatiquement le changement de date et d'horaire
+### 2.1. Périmètre “Version actuelle” (fonctionnel visible)
+- Authentification (inscription, connexion, déconnexion) et profil.
+- Calendrier (vue mois/semaine/jour/liste) et planification de jobs.
+- Administration : gestion des utilisateurs (création/édition/suppression), thèmes.
+- Administration : vue serveur (CPU/RAM/stockage du volume de téléversements).
+- Ansible : analyse d’inventaire depuis un répertoire du volume `/data/uploads`.
 
-Ajout d'un bouton modification pour les RDV
+### 2.2. Évolutions prévues (backlog)
+- Synchronisation de planning : Google Calendar et Microsoft (Outlook/Graph).
+- Gestion d’alertes : notifications popup + emails.
+- Vérification d’email à l’inscription (badge “email vérifié” + restrictions tant que non vérifié).
+- Gestion avancée des groupes métiers et matrice de visibilité.
+- Fonctionnalités “gestionnaire de projet” (voir §10).
 
-L'administrateur, doit pouvoir voir les RDV de tout les utilisateurs
-Il a un menu déroulant pour lui seuleument. Qui selectionne ou déselectionnes les calendriers :
-Tout (active affichage ou désactive / uniquement pour lui)
-Il peut selectionné uniquement le calendrier des chef de projet
-unqiuement celui des DEV etc...
-Mais il peut par exemple selectionner deux ou trois calendrier
-Ils sont affichable ou non, avec ce clique.
-Pose moi des question si tu me comprend mal.
+Hors périmètre (à clarifier avant implémentation) :
+- Application mobile native.
+- Single Sign‑On (SSO) (SAML/OIDC), sauf demande explicite.
+- Gestion documentaire/drive.
 
-Il faut amélioré les utilisateurs :
-Ont doit pouvoir créer un groupe
-Mettre les utilisateurs dans un groupes.
-et leur données des droits.
-- Chef de projet =
-- Developpeur 
-- DevOps
-- Technicien Réseau
+## 3. Utilisateurs, rôles et groupes
 
-Les tech réseau ne vois que les autres tech reseau
-Pareil pour les developpeur
-Les devops voit les devops + dev + tech
-Chef de projet vois tout le monde, peut creer un rdv pour tout le monde et l'assigné a un groupe.
-Il peut tout modifier ou tout supprimée.
+### 3.1. Rôles applicatifs
+L’application gère des rôles de type :
+- Administrateur (admin) : gestion complète.
+- Opérateur (operator) : usage avancé, droits étendus sur événements selon règles.
+- Lecteur (reader) : consultation et création/édition limitée selon règles.
 
+Remarque : si des libellés techniques internes existent (ex : ADMIN/MODERATOR/USER), ils doivent être mappés de façon cohérente aux libellés UI ci‑dessus.
 
+### 3.2. Groupes métiers (fonctionnel)
+L’application doit permettre :
+- La création de groupes (ex : “Chef de projet”, “Développeur”, “DevOps”, “Technicien réseau”).
+- L’affectation des utilisateurs à un ou plusieurs groupes.
+- L’application de règles de visibilité / modification liées au groupe.
 
-Bienvenue sur votre calendrier nous le "date et heure de l'ordinateur"
+### 3.3. Matrice de visibilité (règles attendues)
+Règles minimales à implémenter :
+- Technicien réseau : voit uniquement les événements/agents “Technicien réseau”.
+- Développeur : voit uniquement les événements/agents “Développeur”.
+- DevOps : voit “DevOps” + “Développeur” + “Technicien réseau”.
+- Chef de projet : voit tout le monde.
+
+Règles de création/modification :
+- Chef de projet : peut créer un RDV pour n’importe quel groupe, l’assigner à un groupe, modifier/supprimer.
+- Les autres groupes : peuvent créer/modifier/supprimer uniquement dans les limites des droits définis (à valider : propres événements vs événements du groupe).
+
+## 4. Parcours utilisateur (UX)
+
+### 4.1. Connexion / Déconnexion
+- L’utilisateur se connecte via une page dédiée.
+- Une fois connecté, l’état “Connecté : <nom> (<rôle>)” est affiché dans l’en‑tête.
+- Un bouton “Se déconnecter” met fin à la session locale.
+
+### 4.2. Navigation
+La navigation principale comprend au minimum :
+- Calendrier
+- Projets (si activé)
+- Ansible
+- Git (si activé)
+- Outils (si activé)
+- Administration (réservé aux rôles autorisés)
+
+Les rubriques visibles à l’écran doivent être conditionnées par les droits.
+
+### 4.3. Message d’accueil
+Sur la page calendrier, afficher un message de bienvenue intégrant la date et l’heure du poste utilisateur (date/heure locale du navigateur).
+
+## 5. Module Authentification & compte
+
+### 5.1. Inscription
+- Création de compte via formulaire.
+- Contrôles de validité (champs obligatoires, politique de mot de passe).
+
+### 5.2. Profil
+- Consultation et mise à jour des informations de profil.
+- Changement de mot de passe.
+
+### 5.3. Vérification d’email (évolution)
+- À l’inscription, un email de vérification est envoyé.
+- Tant que l’email n’est pas vérifié :
+	- le compte est considéré “invité”,
+	- l’utilisateur peut consulter selon droits mais ne peut pas créer de RDV.
+- Une fois vérifié : afficher un badge “email vérifié” sur le profil (et/ou dans l’administration).
+
+## 6. Module Calendrier — Planification de jobs / RDV
+
+### 6.1. Vues et interactions
+- Vues disponibles : Mois / Semaine / Jour / Liste.
+- Navigation : précédent/suivant + bouton “Aujourd’hui”.
+- Filtrage par projet (si la notion “Projet” est active).
+
+### 6.2. Création d’un événement
+Champs attendus (minimum) :
+- Titre
+- Date/heure de début
+- Date/heure de fin (si applicable)
+- Journée entière (optionnel)
+- Description (optionnel)
+- Couleur (optionnel)
+- Ressources associées (optionnel) : ex. pods Kubernetes / serveurs
+- Récurrence (optionnel)
+
+Règles de validation temporelle :
+- Interdire la création d’événements dans le passé.
+- Imposer un délai minimum avant création (ex : 15 minutes).
+
+### 6.3. Modification / suppression
+- Ajouter un bouton explicite “Modifier” sur un RDV (en complément des interactions directes).
+- Permettre le déplacement par glisser‑déposer (drag & drop) sur le calendrier :
+	- le changement de date/heure doit être enregistré automatiquement.
+- Interdire la modification et la suppression d’événements passés.
+
+### 6.4. Fenêtre “Prochains événements”
+- Une zone “Prochains événements” liste les RDV à venir.
+- Au clic sur un RDV, afficher le détail dans une fenêtre modale.
+
+### 6.5. Visibilité multi‑utilisateurs (administration)
+- L’administrateur doit pouvoir voir les RDV de tous les utilisateurs.
+- L’administrateur dispose d’un mécanisme de sélection (menu déroulant) lui permettant :
+	- d’afficher/masquer “Tout”,
+	- d’afficher un ou plusieurs calendriers par groupe métier (ex : Chef de projet, Développeur, etc.).
+
+Critère important : ce mécanisme est réservé à l’administrateur.
+
+## 7. Module Administration — Utilisateurs
+
+### 7.1. Création d’utilisateur
+Un administrateur peut créer un utilisateur en définissant :
+- Identifiant (nom d’utilisateur)
+- Mot de passe initial
+- Rôle
+- Thème d’interface
+
+### 7.2. Liste / édition
+Depuis l’administration :
+- Afficher la liste des utilisateurs.
+- Permettre la modification du rôle et du thème.
+- Permettre la modification du mot de passe (saisi “nouveau (optionnel)”).
+- Afficher la date de création.
+
+### 7.3. Suppression
+- Permettre la suppression d’un utilisateur.
+- Définir le comportement sur les événements existants :
+	- soit conservation des événements avec “propriétaire supprimé”,
+	- soit transfert à un compte technique,
+	- soit suppression contrôlée.
+Cette règle doit être décidée avant mise en production.
+
+### 7.4. Gestion des groupes
+Dans l’administration :
+- Créer/modifier/supprimer des groupes.
+- Affecter des utilisateurs à un groupe.
+- Appliquer la matrice de visibilité définie au §3.3.
+
+## 8. Module Administration — Serveur
+
+### 8.1. Métriques affichées
+Afficher une page “Serveur” avec :
+- CPU : nombre de cœurs, charge moyenne, estimation d’usage CPU.
+- Mémoire : total, utilisée (%), disponible.
+- Stockage (téléversements) : chemin (ex : `/data/uploads`), total, utilisé (%), libre.
+
+### 8.2. Exigences
+- Données rafraîchies à intervalle raisonnable (à définir : ex. 10–60s).
+- Les métriques doivent rester lisibles (unités cohérentes, arrondis).
+
+## 9. Module Ansible — Analyse d’inventaire
+
+### 9.1. Objectif
+Permettre à un utilisateur autorisé de déposer/indiquer un répertoire d’uploads et d’analyser un inventaire Ansible afin d’obtenir :
+- la liste des groupes,
+- la liste des hôtes par groupe,
+- les groupes composites (ex : children).
+
+### 9.2. UX attendue
+- Onglets : “Local”, “Folder chooser”, “SSH” (fonctionnel selon droits et implémentation).
+- Champ “Répertoire” : chemin sous le volume d’uploads.
+- Bouton “Analyser”.
+- Résultat : tableau “Groupe / Hôtes”.
+
+### 9.3. Contraintes de stockage
+- Les analyses s’appuient sur le volume de téléversements, typiquement sous `/data/uploads`.
+- L’application doit pouvoir afficher le chemin d’un inventaire détecté (référence de l’upload).
+
+### 9.4. Nettoyage
+- Si l’upload est traité puis supprimé, l’UI doit l’indiquer de façon explicite (ex : “analysé (fichiers supprimés)”).
+
+## 10. Module “Gestion de projet” (évolution)
+
+Objectif : l’application doit aussi servir de gestionnaire de projet pour des équipes de développement.
+
+Périmètre minimal proposé (à valider) :
+- CRUD de projets (nom, description, responsables).
+- Association d’un événement à un projet.
+- Filtre du calendrier par projet.
+
+Toute fonctionnalité supplémentaire (kanban, tickets, sprints, etc.) doit faire l’objet d’une spécification séparée.
+
+## 11. Alertes & notifications (évolution)
+
+### 11.1. Notifications popup
+- Déclenchement sur événements (à définir : création, modification, approche d’échéance, incident).
+- Messages non bloquants.
+
+### 11.2. Notifications email
+- Envoi d’email sur des déclencheurs identiques ou spécifiques.
+- Possibilité de désactiver pour certains rôles/groupes.
+
+## 12. Données (modèle fonctionnel)
+
+### 12.1. Utilisateur
+- Identité : nom d’utilisateur et/ou email (selon modèle retenu).
+- Rôle : admin/operator/reader.
+- Thème : ex. “midnight”, “porcelain” (liste contrôlée).
+- Statut : actif/inactif, email vérifié/non vérifié (évolution).
+- Appartenance à groupe(s).
+
+### 12.2. Groupe
+- Nom
+- Description
+- Règles de visibilité associées (ou référencées par matrice).
+
+### 12.3. Événement / RDV
+- Titre, description
+- Début, fin, all‑day
+- Propriétaire (utilisateur)
+- Groupe cible (optionnel, pour RDV “équipe”)
+- Projet (optionnel, évolution)
+- Ressources (optionnel)
+- Récurrence (optionnel)
+- Métadonnées : date de création, date de mise à jour, statut (actif/supprimé logique si choisi)
+
+### 12.4. Analyse Ansible
+- Référence d’upload (répertoire)
+- Chemin inventaire détecté
+- Résultat structuré : groupes, hôtes, relations
+- Statut de traitement (succès/erreur) + timestamp
+
+### 12.5. Scripts jobs (si activé)
+- Dépôt de scripts
+- Historique des exécutions (job runs) rattaché aux événements
+
+## 13. API (exigences d’interface)
+
+Sans détailler l’implémentation, l’API doit fournir :
+- Auth : inscription, login, récupération du profil, modification du profil, changement de mot de passe, logout.
+- Utilisateurs (admin) : liste, création, modification, suppression.
+- Groupes (admin) : liste, création, modification, suppression, affectations.
+- Événements : liste (filtrée selon droits), création, modification, suppression, détail.
+- Serveur : métriques CPU/RAM/disque.
+- Ansible : déclencher une analyse et obtenir le résultat.
+
+Règle : toute action sensible doit exiger une authentification valide et vérifier le rôle/groupe.
+
+## 14. Sécurité et conformité
+
+Exigences minimales :
+- Stockage des mots de passe sous forme hachée (algorithme robuste).
+- Jetons de session avec expiration.
+- Protection contre l’accès non autorisé : contrôle systématique des droits sur chaque action.
+- Journalisation des actions d’administration (création/suppression utilisateur, changement de rôle, suppression d’événement).
+- Validation des entrées (XSS côté frontend, injections côté backend) et messages d’erreur non bavards.
+- Politique de mots de passe (longueur minimale, complexité si requise).
+
+## 15. Exigences non fonctionnelles
+
+- Performance : affichage du calendrier fluide pour une volumétrie “équipe” (à définir : ex. 1k–10k événements).
+- Disponibilité : service accessible sur réseau interne, redémarrage automatisé.
+- Observabilité : logs applicatifs exploitables + erreurs analysables.
+- Maintenabilité : documentation de démarrage et scripts d’initialisation/seed.
+- Internationalisation : interface en français.
+
+## 16. Déploiement et exploitation
+
+- Déploiement containerisé (Docker Compose).
+- Base de données PostgreSQL.
+- Frontend servi en statique par l’application.
+- Volume persistant pour uploads : `/data/uploads`.
+- Comptes initiaux : création d’un compte admin par défaut (à sécuriser en production).
+
+## 17. Recette / critères d’acceptation (exemples)
+
+- Un utilisateur “reader” peut se connecter et voir le calendrier selon règles.
+- Un utilisateur non vérifié (évolution) ne peut pas créer de RDV.
+- Un événement dans le passé ne peut pas être modifié/supprimé.
+- Le drag & drop déplace un événement et enregistre la nouvelle date/heure.
+- Le panneau admin permet de créer un utilisateur, modifier son rôle/thème, et le supprimer.
+- La page Serveur affiche des valeurs cohérentes (unités, %).
+- L’analyse Ansible d’un inventaire valide affiche la liste des groupes et hôtes.
+
+## 18. Points à valider (questions ouvertes)
+
+- Les événements sont‑ils strictement “personnels” ou “d’équipe” par défaut ?
+- Un utilisateur peut‑il appartenir à plusieurs groupes métiers ? Si oui, quelles règles de visibilité priment ?
+- Politique lors de suppression d’un utilisateur (conserver/transférer/supprimer ses événements) ?
+- Synchronisation Google/Microsoft : lecture seule ou bidirectionnelle ?
+- Notifications : quels déclencheurs exacts et quelle fréquence (rappels) ?

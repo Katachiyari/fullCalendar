@@ -1,0 +1,1 @@
+{"detail":[{"type":"value_error","loc":["body","start"],"msg":"Value error, La date doit être au minimum dans 15 minutes","input":"2026-01-08T10:35:22.339800Z","ctx":{"error":{}}}]}

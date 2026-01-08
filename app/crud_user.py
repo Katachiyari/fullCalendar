@@ -1,21 +1,33 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
+import uuid
 from app.models import User, UserRole
-from app.schemas_user import UserCreate, UserUpdate
+from app.schemas_user import UserCreate, UserCreateAdmin, UserUpdate
+from app.security import hash_password
+import app.crud_groups as crud_groups
 
 
 async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100):
     """Récupérer tous les utilisateurs"""
-    stmt = select(User).order_by(User.created_at).offset(skip).limit(limit)
+    stmt = (
+        select(User)
+        .options(selectinload(User.group))
+        .order_by(User.created_at)
+        .offset(skip)
+        .limit(limit)
+    )
     result = await db.execute(stmt)
     return result.scalars().all()
 
 
 async def get_user(user_id: str, db: AsyncSession):
     """Récupérer un utilisateur par son ID"""
-    result = await db.execute(select(User).where(User.id == user_id))
+    result = await db.execute(
+        select(User).options(selectinload(User.group)).where(User.id == user_id)
+    )
     user = result.scalar_one_or_none()
     if user is None:
         raise HTTPException(
@@ -27,7 +39,9 @@ async def get_user(user_id: str, db: AsyncSession):
 
 async def get_user_by_email(email: str, db: AsyncSession):
     """Récupérer un utilisateur par son email"""
-    result = await db.execute(select(User).where(User.email == email))
+    result = await db.execute(
+        select(User).options(selectinload(User.group)).where(User.email == email)
+    )
     return result.scalar_one_or_none()
 
 
@@ -41,9 +55,47 @@ async def create_user(user_in: UserCreate, db: AsyncSession):
             detail="Email already registered"
         )
     
-    user = User(**user_in.model_dump())
+    # Création sans mot de passe n'est pas utilisable pour l'authentification.
+    # On conserve la fonction pour compat, mais on force un mot de passe inutilisable.
+    user_data = user_in.model_dump()
+    user_data["hashed_password"] = hash_password(str(uuid.uuid4()))
+    user = User(**user_data)
     db.add(user)
     
+    try:
+        await db.commit()
+        await db.refresh(user)
+        return user
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email already registered"
+        )
+
+
+async def create_user_admin(user_in: UserCreateAdmin, db: AsyncSession):
+    """Créer un utilisateur (ADMIN) avec mot de passe hashé."""
+    existing_user = await get_user_by_email(user_in.email, db)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email already registered"
+        )
+
+    user_data = user_in.model_dump(exclude={"password"})
+    user_data["hashed_password"] = hash_password(user_in.password)
+    # Un utilisateur créé par admin est considéré vérifié par défaut (évite blocage)
+    user_data.setdefault("email_verified", True)
+    
+    # Si aucun groupe n'est fourni, on affecte un groupe par défaut (meilleur UX / cohérence avec le calendrier).
+    if user_data.get("group_id") in (None, ""):
+        default_group = await crud_groups.get_group_by_slug("developpeur", db)
+        if default_group:
+            user_data["group_id"] = default_group.id
+    user = User(**user_data)
+    db.add(user)
+
     try:
         await db.commit()
         await db.refresh(user)
@@ -101,3 +153,12 @@ async def count_admins(db: AsyncSession) -> int:
     stmt = select(User).where(User.role == UserRole.ADMIN)
     result = await db.execute(stmt)
     return len(result.scalars().all())
+
+
+async def set_user_password(user_id: str, new_password: str, db: AsyncSession) -> User:
+    user = await get_user(user_id, db)
+    user.hashed_password = hash_password(new_password)
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user

@@ -70,8 +70,8 @@ async def update_profile(
     current_user: User = Depends(get_current_user)
 ):
     """Mettre à jour le profil utilisateur"""
-    from crud_user import update_user as update_user_func
-    from schemas_user import UserUpdate
+    from app.crud_user import update_user as update_user_func
+    from app.schemas_user import UserUpdate
     
     # Créer un objet UserUpdate à partir du dictionnaire
     update_data = UserUpdate(**user_update)
@@ -103,9 +103,30 @@ async def delete_profile(
     current_user: User = Depends(get_current_user)
 ):
     """Supprimer son compte utilisateur"""
-    from crud_user import delete_user
+    from app.crud_user import delete_user
     await delete_user(current_user.id, db)
     return None
+
+
+@router.post("/request-email-verification")
+async def request_email_verification(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Déclenche la vérification email (envoi best-effort)."""
+    token = await crud_auth.request_email_verification(current_user, db)
+    # En production, on ne renvoie pas le token. En dev, c'est utile.
+    return {
+        "message": "Verification email requested",
+        "token": token,
+    }
+
+
+@router.get("/verify-email")
+async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
+    """Valide un token de vérification email."""
+    user = await crud_auth.verify_email_token(token, db)
+    return {"message": "Email verified", "user_id": user.id}
 
 
 @router.post("/logout")

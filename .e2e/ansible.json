@@ -1,0 +1,1 @@
+{"inventory_file":"/data/uploads/inventory.ini","groups":[{"group":"devops","hosts":[{"name":"host1","ip":"10.0.0.1"}]},{"group":"developpeur","hosts":[{"name":"app1","ip":"10.0.1.10"}]},{"group":"technicien_reseau","hosts":[{"name":"router1","ip":"10.0.2.254"}]}]}

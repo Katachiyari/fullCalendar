@@ -32,7 +32,7 @@ async def init_db():
         print("\n✨ Initialisation terminée!")
         print("\n🚀 Prochaines étapes:")
         print("   1. Démarrer l'app: python -m uvicorn app.main:app --reload")
-        print("   2. Ouvrir: http://localhost:8000/static/login.html")
+        print("   2. Ouvrir: http://localhost:8000/login")
         print("   3. Email: admin@devops.example.com")
         print("   4. Mot de passe: Admin@123456")
         

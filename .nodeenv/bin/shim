@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+export NODE_PATH='/media/james/DATA1/python/fullCalendar/.nodeenv/lib/node_modules'
+export NPM_CONFIG_PREFIX='/media/james/DATA1/python/fullCalendar/.nodeenv'
+export npm_config_prefix='/media/james/DATA1/python/fullCalendar/.nodeenv'
+exec '/media/james/DATA1/python/fullCalendar/.nodeenv/bin/node' "$@"

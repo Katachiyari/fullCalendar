@@ -7,7 +7,7 @@ echo "════════════════════════�
 echo "  🚀 Démarrage du serveur"
 echo "═══════════════════════════════════════════════════════════════"
 echo ""
-echo "🌐 URL: http://localhost:8001/static/login.html"
+echo "🌐 URL: http://localhost:8001/login"
 echo ""
 echo "📝 Identifiants:"
 echo "   Email:    admin@devops.example.com"

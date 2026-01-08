@@ -222,6 +222,17 @@
                             </p>
                         </div>
 
+                        <div class="info-box mb-3">
+                            <p><strong>Email:</strong></p>
+                            <p id="email-verified-display" class="mt-2">
+                                <span class="tag is-light">Chargement...</span>
+                            </p>
+                            <button id="request-verify-btn" class="button is-small is-link is-light mt-2" style="display:none" onclick="requestEmailVerification()">
+                                <span class="icon"><i class="fas fa-envelope"></i></span>
+                                <span>Vérifier mon email</span>
+                            </button>
+                        </div>
+
                         <div class="info-box">
                             <p><strong>Compte créé:</strong></p>
                             <p id="created-date" class="mt-2">Chargement...</p>
@@ -319,6 +330,19 @@
                     // Date de création
                     const createdDate = new Date(user.created_at).toLocaleDateString('fr-FR');
                     document.getElementById('created-date').textContent = createdDate;
+
+                    // Email vérifié
+                    const emailBox = document.getElementById('email-verified-display');
+                    const verifyBtn = document.getElementById('request-verify-btn');
+                    if (emailBox) {
+                        if (user.email_verified) {
+                            emailBox.innerHTML = '<span class="tag is-success"><i class="fas fa-check"></i>&nbsp;Email vérifié</span>';
+                            if (verifyBtn) verifyBtn.style.display = 'none';
+                        } else {
+                            emailBox.innerHTML = '<span class="tag is-warning"><i class="fas fa-triangle-exclamation"></i>&nbsp;Email non vérifié</span>';
+                            if (verifyBtn) verifyBtn.style.display = '';
+                        }
+                    }
 
                     // Sauvegarder les données originales
                     originalData = { ...user };
@@ -428,7 +452,7 @@
                 const response = await auth.fetch('/auth/change-password', {
                     method: 'POST',
                     body: JSON.stringify({
-                        current_password: current,
+                        old_password: current,
                         new_password: newPass
                     })
                 });
@@ -445,6 +469,22 @@
             } catch (error) {
                 console.error('Erreur:', error);
                 alert('Erreur de connexion');
+            }
+        }
+
+        async function requestEmailVerification() {
+            try {
+                const response = await auth.fetch('/auth/request-email-verification', {
+                    method: 'POST'
+                });
+                if (response && response.ok) {
+                    const data = await response.json();
+                    alert('Demande de vérification envoyée. Consultez vos emails.' + (data.token ? `\n(DEV token: ${data.token})` : ''));
+                } else {
+                    alert('Erreur lors de la demande de vérification.');
+                }
+            } catch (e) {
+                alert('Erreur lors de la demande de vérification.');
             }
         }
 

@@ -223,6 +223,15 @@
                         <p class="help">Sélectionnez une période (début → fin).</p>
                     </div>
 
+                    <div class="field" id="event-group-field" style="display:none;">
+                        <label class="label">Groupe</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select id="event-group"></select>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="field">
                         <label class="label">Description</label>
                         <div class="control">
@@ -284,6 +293,14 @@
                 </div>
             </section>
             <footer class="modal-card-foot">
+                <button id="details-edit-btn" class="button is-info" style="display:none" onclick="editFromDetails()">
+                    <span class="icon"><i class="fas fa-edit"></i></span>
+                    <span>Modifier</span>
+                </button>
+                <button id="details-delete-btn" class="button is-danger" style="display:none" onclick="deleteFromDetails()">
+                    <span class="icon"><i class="fas fa-trash"></i></span>
+                    <span>Supprimer</span>
+                </button>
                 <button class="button" onclick="closeEventDetailsModal()">OK</button>
             </footer>
         </div>
@@ -300,6 +317,7 @@
         let calendar;
         let events = [];
         let pendingAllDaySelection = false;
+        let editingEventId = null;
 
         function formatForDatetimeLocal(date) {
             const pad = (n) => String(n).padStart(2, '0');
@@ -377,6 +395,9 @@
             // Charger les données utilisateur
             await loadUserInfo();
 
+            // Charger les groupes si nécessaire (admin / chef de projet)
+            await initGroupSelector();
+
             // Charger les événements est géré par initializeCalendar maintenant
             // await loadEvents();
 
@@ -415,6 +436,34 @@
                 }
             } catch (error) {
                 console.error('Erreur lors du chargement des infos utilisateur:', error);
+            }
+        }
+
+        async function initGroupSelector() {
+            const user = auth.getCurrentUser();
+            const canPickGroup = user && (user.role === 'ADMIN' || user.group?.slug === 'chef_projet');
+            const field = document.getElementById('event-group-field');
+            if (!field) return;
+            if (!canPickGroup) {
+                field.style.display = 'none';
+                return;
+            }
+
+            const resp = await auth.fetch('/groups/');
+            if (!resp || !resp.ok) {
+                field.style.display = 'none';
+                return;
+            }
+            const groups = await resp.json();
+            const select = document.getElementById('event-group');
+            if (!select) return;
+
+            select.innerHTML = groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+            field.style.display = '';
+
+            // Pré-sélectionner le groupe de l'utilisateur
+            if (user.group_id) {
+                select.value = user.group_id;
             }
         }
 
@@ -478,6 +527,7 @@
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
                 selectable: true,
+                editable: true,
                 events: async function(info, successCallback, failureCallback) {
                     try {
                         const response = await auth.fetch('/events/');
@@ -503,6 +553,22 @@
                 eventClick: function(info) {
                     showEventDetails(info.event);
                 },
+                eventDrop: async function(info) {
+                    const ok = await updateEvent(info.event.id, {
+                        start: info.event.start ? info.event.start.toISOString() : null,
+                        end: info.event.end ? info.event.end.toISOString() : null,
+                        all_day: !!info.event.allDay,
+                    }, { silentSuccess: true });
+                    if (!ok) info.revert();
+                },
+                eventResize: async function(info) {
+                    const ok = await updateEvent(info.event.id, {
+                        start: info.event.start ? info.event.start.toISOString() : null,
+                        end: info.event.end ? info.event.end.toISOString() : null,
+                        all_day: !!info.event.allDay,
+                    }, { silentSuccess: true });
+                    if (!ok) info.revert();
+                },
                 dateClick: function(info) {
                     // Clic simple: on propose une période par défaut (1h)
                     showNewEventModal({
@@ -524,21 +590,19 @@
         function showEventDetails(event) {
             const startStr = event.start ? new Date(event.start).toLocaleString('fr-FR') : 'N/A';
             const endStr = event.end ? new Date(event.end).toLocaleString('fr-FR') : 'N/A';
-            alert(`
-Événement: ${event.title}
-Début: ${startStr}
-Fin: ${endStr}
-Description: ${event.extendedProps.description || 'N/A'}
-            `);
-
-            // Proposer la suppression
-            if (confirm('Supprimer ce rendez-vous ?')) {
-                deleteEvent(event.id);
-            }
+            const description = event.extendedProps?.description || 'N/A';
+            showEventDetailsModal({
+                title: event.title,
+                start: startStr,
+                end: endStr,
+                description,
+                eventId: event.id,
+                showActions: true,
+            });
         }
 
         // Créer un nouvel événement
-           function showNewEventModal(selection) {
+                     function showNewEventModal(selection) {
             const modal = document.getElementById('event-modal');
               const startInput = document.getElementById('event-start');
               const endInput = document.getElementById('event-end');
@@ -552,6 +616,11 @@ Description: ${event.extendedProps.description || 'N/A'}
               endInput.value = formatForDatetimeLocal(endDate);
             document.getElementById('event-title').value = '';
             document.getElementById('event-description').value = '';
+                const groupSel = document.getElementById('event-group');
+                if (groupSel && auth.getCurrentUser()?.group_id) groupSel.value = auth.getCurrentUser().group_id;
+            editingEventId = null;
+            const titleEl = document.querySelector('#event-modal .modal-card-title span:last-child');
+            if (titleEl) titleEl.textContent = 'Nouvel Événement';
             
             modal.classList.add('is-active');
             
@@ -584,6 +653,16 @@ Description: ${event.extendedProps.description || 'N/A'}
             document.getElementById('details-start').textContent = details.start || 'N/A';
             document.getElementById('details-end').textContent = details.end || 'N/A';
             document.getElementById('details-description').textContent = details.description || 'N/A';
+
+            // Stocker l'id de l'événement pour actions
+            const modal = document.getElementById('event-details-modal');
+            modal.dataset.eventId = details.eventId || '';
+            const editBtn = document.getElementById('details-edit-btn');
+            const delBtn = document.getElementById('details-delete-btn');
+            const showActions = details.showActions === true;
+            if (editBtn) editBtn.style.display = showActions ? '' : 'none';
+            if (delBtn) delBtn.style.display = showActions ? '' : 'none';
+
             document.getElementById('event-details-modal').classList.add('is-active');
         }
 
@@ -613,8 +692,50 @@ Description: ${event.extendedProps.description || 'N/A'}
                     start: startStr,
                     end: endStr,
                     description: ev.description || 'N/A',
+                    eventId: ev.id,
+                    showActions: false,
                 });
             });
+        }
+
+        function editFromDetails() {
+            const modal = document.getElementById('event-details-modal');
+            const eventId = modal.dataset.eventId;
+            if (!eventId) return;
+            const ev = events.find(x => String(x.id) === String(eventId));
+            if (!ev) return;
+            openEditEventModal(ev);
+            closeEventDetailsModal();
+        }
+
+        function deleteFromDetails() {
+            const modal = document.getElementById('event-details-modal');
+            const eventId = modal.dataset.eventId;
+            if (!eventId) return;
+            if (confirm('Supprimer ce rendez-vous ?')) {
+                deleteEvent(eventId);
+                closeEventDetailsModal();
+            }
+        }
+
+        function openEditEventModal(ev) {
+            const modal = document.getElementById('event-modal');
+            const startInput = document.getElementById('event-start');
+            const endInput = document.getElementById('event-end');
+            const titleInput = document.getElementById('event-title');
+            const descInput = document.getElementById('event-description');
+
+            titleInput.value = ev.title || '';
+            descInput.value = ev.description || '';
+            startInput.value = ev.start ? ev.start.slice(0, 16) : '';
+            endInput.value = ev.end ? ev.end.slice(0, 16) : '';
+            const groupSel = document.getElementById('event-group');
+            if (groupSel) groupSel.value = ev.group_id || auth.getCurrentUser()?.group_id || '';
+
+            editingEventId = ev.id;
+            const titleEl = document.querySelector('#event-modal .modal-card-title span:last-child');
+            if (titleEl) titleEl.textContent = 'Modifier Événement';
+            modal.classList.add('is-active');
         }
 
         // Gérer la soumission du formulaire
@@ -625,6 +746,7 @@ Description: ${event.extendedProps.description || 'N/A'}
             const startVal = document.getElementById('event-start').value; // YYYY-MM-DDTHH:mm
             const endVal = document.getElementById('event-end').value; // YYYY-MM-DDTHH:mm
             const description = document.getElementById('event-description').value;
+            const groupId = document.getElementById('event-group')?.value || null;
 
             if (title && startVal && endVal) {
                 // On peut ajouter les secondes si nécessaire
@@ -642,13 +764,17 @@ Description: ${event.extendedProps.description || 'N/A'}
                     return;
                 }
 
-                const ok = await createEvent({
+                const payload = {
                     title,
                     start: apiStart,
                     end: apiEnd,
                     description,
-                    all_day: shouldAllDay
-                });
+                    all_day: shouldAllDay,
+                    group_id: groupId,
+                };
+                const ok = editingEventId
+                    ? await updateEvent(editingEventId, payload)
+                    : await createEvent(payload);
                 if (ok) closeModal();
             }
         }
@@ -713,6 +839,38 @@ Description: ${event.extendedProps.description || 'N/A'}
             } catch (error) {
                 console.error('Erreur:', error);
                 showErrorModal('Erreur lors de la création');
+                return false;
+            }
+        }
+
+        async function updateEvent(eventId, payload, options = {}) {
+            try {
+                const body = { ...payload };
+                const response = await auth.fetch(`/events/${eventId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(body)
+                });
+
+                if (response && response.ok) {
+                    if (calendar) calendar.refetchEvents();
+                    if (!options.silentSuccess) {
+                        alert('Événement mis à jour.');
+                    }
+                    return true;
+                }
+
+                let errorMsg = 'Erreur lors de la mise à jour';
+                if (response) {
+                    try {
+                        const err = await response.json();
+                        if (err.detail) errorMsg += `: ${Array.isArray(err.detail) ? err.detail.map(e => e.msg).join(', ') : err.detail}`;
+                    } catch (e) {}
+                }
+                showErrorModal(errorMsg);
+                return false;
+            } catch (error) {
+                console.error('Erreur:', error);
+                showErrorModal('Erreur lors de la mise à jour');
                 return false;
             }
         }

@@ -222,6 +222,70 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Gestion des groupes -->
+            <div class="content-card" style="margin-top: 2rem;">
+                <h2 class="title is-4">
+                    <span class="icon"><i class="fas fa-layer-group"></i></span>
+                    <span>Gestion des Groupes</span>
+                </h2>
+
+                <div class="columns">
+                    <div class="column is-half">
+                        <div class="field">
+                            <label class="label">Nom</label>
+                            <div class="control">
+                                <input class="input" type="text" id="groupName" placeholder="Ex: DevOps">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Slug</label>
+                            <div class="control">
+                                <input class="input" type="text" id="groupSlug" placeholder="Ex: devops">
+                            </div>
+                            <p class="help">Identifiant technique (minuscule, sans espaces).</p>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Description (optionnel)</label>
+                            <div class="control">
+                                <textarea class="textarea" id="groupDescription" placeholder="Description du groupe"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="field is-grouped">
+                            <div class="control">
+                                <button class="button is-success" onclick="saveGroup()">
+                                    <span class="icon"><i class="fas fa-save"></i></span>
+                                    <span id="groupSaveLabel">Créer</span>
+                                </button>
+                            </div>
+                            <div class="control">
+                                <button class="button" onclick="resetGroupForm()">Annuler</button>
+                            </div>
+                        </div>
+                        <input type="hidden" id="editingGroupId" value="">
+                    </div>
+
+                    <div class="column is-half">
+                        <div class="table-container">
+                            <table class="table is-fullwidth is-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Slug</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="groupsTableBody">
+                                    <tr><td colspan="3" class="has-text-grey">Chargement...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -272,6 +336,39 @@
                 </div>
 
                 <div class="field">
+                    <label class="label">Thème</label>
+                    <div class="control">
+                        <input class="input" type="text" id="editTheme" placeholder="midnight">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Groupe</label>
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                            <select id="editGroup"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Email vérifié</label>
+                    <div class="control">
+                        <label class="checkbox">
+                            <input type="checkbox" id="editEmailVerified">
+                            Vérifié
+                        </label>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Nouveau mot de passe (optionnel)</label>
+                    <div class="control">
+                        <input class="input" type="password" id="editNewPassword" placeholder="Laisser vide pour ne pas changer">
+                    </div>
+                </div>
+
+                <div class="field">
                     <label class="label">Statut</label>
                     <div class="control">
                         <label class="checkbox">
@@ -318,6 +415,8 @@
         let allUsers = [];
         let currentEditingUser = null;
         let currentDeletingUserId = null;
+        let allGroups = [];
+        let editingGroupId = '';
 
         // Initialiser la page
         async function initPage() {
@@ -333,8 +432,137 @@
                 return;
             }
 
-            createNavbar('admin');
+            createNavbar('admin-users');
+            await loadGroups();
             await loadUsers();
+        }
+
+        async function loadGroups() {
+            try {
+                const response = await auth.fetch('/groups/');
+                if (response && response.ok) {
+                    allGroups = await response.json();
+                    const select = document.getElementById('editGroup');
+                    if (select) {
+                        select.innerHTML = '<option value="">(Aucun)</option>' + allGroups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+                    }
+
+                    renderGroupsTable();
+                }
+            } catch (e) {
+                allGroups = [];
+                renderGroupsTable();
+            }
+        }
+
+        function renderGroupsTable() {
+            const tbody = document.getElementById('groupsTableBody');
+            if (!tbody) return;
+
+            if (!allGroups || allGroups.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="has-text-grey">Aucun groupe</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = allGroups.map(g => `
+                <tr>
+                    <td>${escapeHtml(g.name)}</td>
+                    <td>${escapeHtml(g.slug)}</td>
+                    <td>
+                        <button class="button is-small is-info is-light" onclick="editGroup('${g.id}')">
+                            <span class="icon is-small"><i class="fas fa-edit"></i></span>
+                        </button>
+                        <button class="button is-small is-danger is-light" onclick="deleteGroup('${g.id}')">
+                            <span class="icon is-small"><i class="fas fa-trash"></i></span>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function resetGroupForm() {
+            editingGroupId = '';
+            document.getElementById('editingGroupId').value = '';
+            document.getElementById('groupName').value = '';
+            document.getElementById('groupSlug').value = '';
+            document.getElementById('groupDescription').value = '';
+            document.getElementById('groupSaveLabel').textContent = 'Créer';
+        }
+
+        function editGroup(groupId) {
+            const g = (allGroups || []).find(x => x.id === groupId);
+            if (!g) return;
+            editingGroupId = groupId;
+            document.getElementById('editingGroupId').value = groupId;
+            document.getElementById('groupName').value = g.name || '';
+            document.getElementById('groupSlug').value = g.slug || '';
+            document.getElementById('groupDescription').value = g.description || '';
+            document.getElementById('groupSaveLabel').textContent = 'Mettre à jour';
+        }
+
+        async function saveGroup() {
+            const name = document.getElementById('groupName').value.trim();
+            const slug = document.getElementById('groupSlug').value.trim();
+            const description = document.getElementById('groupDescription').value.trim();
+
+            if (!name || !slug) {
+                alert('Nom et slug requis.');
+                return;
+            }
+
+            const payload = { name, slug, description: description || null };
+            try {
+                let response;
+                if (editingGroupId) {
+                    response = await auth.fetch(`/groups/${editingGroupId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    response = await auth.fetch('/groups/', {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                if (response && response.ok) {
+                    resetGroupForm();
+                    await loadGroups();
+                    alert('Groupe enregistré!');
+                } else {
+                    alert('Erreur lors de l\'enregistrement du groupe');
+                }
+            } catch (e) {
+                alert('Erreur de connexion');
+            }
+        }
+
+        async function deleteGroup(groupId) {
+            const g = (allGroups || []).find(x => x.id === groupId);
+            const label = g ? `${g.name} (${g.slug})` : groupId;
+            if (!confirm(`Supprimer le groupe ${label} ?`)) return;
+
+            try {
+                const response = await auth.fetch(`/groups/${groupId}`, { method: 'DELETE' });
+                if (response && response.ok) {
+                    if (editingGroupId === groupId) resetGroupForm();
+                    await loadGroups();
+                    alert('Groupe supprimé!');
+                } else {
+                    alert('Erreur lors de la suppression');
+                }
+            } catch (e) {
+                alert('Erreur de connexion');
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str || '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
         }
 
         // Charger la liste des utilisateurs
@@ -369,6 +597,10 @@
                     <div class="user-info">
                         <div class="user-name">${user.first_name} ${user.last_name}</div>
                         <div class="user-email">${user.email}</div>
+                        <div style="margin-top: 0.5rem;">
+                            ${user.group && user.group.name ? `<span class="tag is-link is-light">${escapeHtml(user.group.name)}</span>` : (user.group_id ? '<span class="tag is-link is-light">Groupe</span>' : '<span class="tag is-light">Aucun groupe</span>')}
+                            ${user.email_verified ? '<span class="tag is-success is-light">Email vérifié</span>' : '<span class="tag is-warning is-light">Email non vérifié</span>'}
+                        </div>
                     </div>
                     <div style="width: 150px;">
                         <span class="role-badge role-${user.role.toLowerCase()}">
@@ -382,10 +614,10 @@
                         }
                     </div>
                     <div class="user-actions">
-                        <button class="button is-small is-info is-light" onclick="editUser(${user.id})">
+                        <button class="button is-small is-info is-light" onclick="editUser('${user.id}')">
                             <span class="icon is-small"><i class="fas fa-edit"></i></span>
                         </button>
-                        <button class="button is-small is-danger is-light" onclick="deleteUser(${user.id})">
+                        <button class="button is-small is-danger is-light" onclick="deleteUser('${user.id}')">
                             <span class="icon is-small"><i class="fas fa-trash"></i></span>
                         </button>
                     </div>
@@ -434,7 +666,15 @@
             document.getElementById('editLastName').value = user.last_name;
             document.getElementById('editEmail').value = user.email;
             document.getElementById('editRole').value = user.role;
+            const theme = document.getElementById('editTheme');
+            if (theme) theme.value = user.theme || 'midnight';
             document.getElementById('editActive').checked = user.is_active;
+            const groupSelect = document.getElementById('editGroup');
+            if (groupSelect) groupSelect.value = user.group_id || '';
+            const verified = document.getElementById('editEmailVerified');
+            if (verified) verified.checked = !!user.email_verified;
+            const pwd = document.getElementById('editNewPassword');
+            if (pwd) pwd.value = '';
 
             document.getElementById('editUserModal').classList.add('is-active');
         }
@@ -453,7 +693,10 @@
                 first_name: document.getElementById('editFirstName').value,
                 last_name: document.getElementById('editLastName').value,
                 role: document.getElementById('editRole').value,
-                is_active: document.getElementById('editActive').checked
+                theme: document.getElementById('editTheme').value || null,
+                is_active: document.getElementById('editActive').checked,
+                group_id: document.getElementById('editGroup').value || null,
+                email_verified: document.getElementById('editEmailVerified').checked
             };
 
             try {
@@ -463,7 +706,21 @@
                 });
 
                 if (response && response.ok) {
-                    alert('Utilisateur mis à jour!');
+                    // Mot de passe optionnel
+                    const newPwd = document.getElementById('editNewPassword').value;
+                    if (newPwd && newPwd.length >= 8) {
+                        const respPwd = await auth.fetch(`/users/${currentEditingUser.id}/password`, {
+                            method: 'PUT',
+                            body: JSON.stringify({ new_password: newPwd })
+                        });
+                        if (!respPwd || !respPwd.ok) {
+                            alert('Utilisateur mis à jour, mais erreur sur le mot de passe.');
+                        } else {
+                            alert('Utilisateur et mot de passe mis à jour!');
+                        }
+                    } else {
+                        alert('Utilisateur mis à jour!');
+                    }
                     closeModal();
                     await loadUsers();
                 } else {

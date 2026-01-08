@@ -21,11 +21,11 @@
 └── app/routers/auth.py             7 endpoints d'authentification
 
 🎨 FRONTEND (HTML/CSS/JavaScript)
-├── static/login.html               Connexion
-├── static/register.html            Inscription
-├── static/index.html               Calendrier FullCalendar
-├── static/profile.html             Profil utilisateur
-├── static/admin-users.html         Panel admin
+├── /login                          Connexion (SPA)
+├── /register                       Inscription (SPA)
+├── /calendar                       Calendrier FullCalendar (SPA)
+├── /profile                        Profil utilisateur (SPA)
+├── /admin/users                    Panel admin (SPA)
 ├── static/js/auth.js               Gestion du token JWT
 └── static/js/navbar.js             Navbar réutilisable
 
@@ -130,7 +130,7 @@ app/dependencies.py
 app/main.py
   ➕ Import et include du router auth
 
-static/index.html
+SPA route /calendar
   🔄 Bootstrap → Bulma CSS
   ➕ Complete auth integration
 
@@ -142,7 +142,7 @@ static/index.html
    $ docker-compose up
 
 2. Ouvrir dans le navigateur:
-   http://localhost:8000/static/login.html
+   http://localhost:8000/login
 
 3. Credentials admin:
    Email:    admin@devops.example.com
@@ -176,7 +176,7 @@ Functionality:
 ──────────────────────────────────────────────────────────────────
 
 1. Via le navigateur:
-   Ouvrir http://localhost:8000/static/login.html
+   Ouvrir http://localhost:8000/login
 
 2. Via Swagger UI:
    Ouvrir http://localhost:8000/docs

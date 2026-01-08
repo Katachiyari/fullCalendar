@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administration - Serveur</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+    nav.navbar { background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .main-container { padding: 2rem 0; }
+    .card-like { background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 2rem; }
+    .metric { background: #f5f7fa; border-radius: 8px; padding: 1.5rem; }
+  </style>
+</head>
+<body>
+  <!-- Navbar injectée -->
+
+  <div class="main-container">
+    <div class="container">
+      <div class="card-like">
+        <h1 class="title is-4">
+          <span class="icon"><i class="fas fa-server"></i></span>
+          <span>Administration — Serveur</span>
+        </h1>
+        <p class="subtitle is-6">Vue CPU / RAM / Stockage (volume des téléversements).</p>
+
+        <div class="columns">
+          <div class="column is-6">
+            <div class="metric">
+              <h2 class="title is-6">CPU</h2>
+              <p><strong>Cœurs CPU :</strong> <span id="cpu-cores">—</span></p>
+              <p><strong>Charge moyenne :</strong> <span id="cpu-load">—</span></p>
+            </div>
+          </div>
+          <div class="column is-6">
+            <div class="metric">
+              <h2 class="title is-6">Mémoire</h2>
+              <p><strong>Total :</strong> <span id="mem-total">—</span></p>
+              <p><strong>Utilisée :</strong> <span id="mem-used">—</span></p>
+              <p><strong>Disponible :</strong> <span id="mem-avail">—</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="metric">
+          <h2 class="title is-6">Stockage (téléversements)</h2>
+          <p><strong>Chemin :</strong> <span id="disk-path" class="has-text-grey">—</span></p>
+          <p><strong>Total :</strong> <span id="disk-total">—</span></p>
+          <p><strong>Utilisé :</strong> <span id="disk-used">—</span></p>
+          <p><strong>Libre :</strong> <span id="disk-free">—</span></p>
+        </div>
+
+        <div class="mt-4">
+          <button class="button is-link is-light" onclick="loadMetrics()">
+            <span class="icon"><i class="fas fa-sync-alt"></i></span>
+            <span>Actualiser</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/navbar.js"></script>
+
+  <script>
+    function fmtBytes(bytes) {
+      if (bytes === null || bytes === undefined) return '—';
+      const units = ['B','KiB','MiB','GiB','TiB'];
+      let v = Number(bytes);
+      let u = 0;
+      while (v >= 1024 && u < units.length - 1) { v /= 1024; u++; }
+      return `${v.toFixed(2)} ${units[u]}`;
+    }
+
+    async function initPage() {
+      if (!auth.isAuthenticated()) {
+        window.location.href = '/static/login.html';
+        return;
+      }
+      createNavbar('admin-server');
+      await loadMetrics();
+    }
+
+    async function loadMetrics() {
+      const resp = await auth.fetch('/admin/server-metrics');
+      if (!resp || !resp.ok) {
+        alert('Accès refusé ou erreur serveur');
+        return;
+      }
+      const data = await resp.json();
+
+      document.getElementById('cpu-cores').textContent = data.cpu?.cores ?? '—';
+      const l = data.cpu?.load;
+      document.getElementById('cpu-load').textContent = l ? `${l.avg_1} / ${l.avg_5} / ${l.avg_15}` : '—';
+
+      document.getElementById('mem-total').textContent = fmtBytes(data.memory?.total_bytes);
+      document.getElementById('mem-used').textContent = fmtBytes(data.memory?.used_bytes);
+      document.getElementById('mem-avail').textContent = fmtBytes(data.memory?.available_bytes);
+
+      document.getElementById('disk-path').textContent = data.storage?.path ?? '—';
+      document.getElementById('disk-total').textContent = fmtBytes(data.storage?.total_bytes);
+      document.getElementById('disk-used').textContent = fmtBytes(data.storage?.used_bytes);
+      document.getElementById('disk-free').textContent = fmtBytes(data.storage?.free_bytes);
+    }
+
+    initPage();
+  </script>
+</body>
+</html>

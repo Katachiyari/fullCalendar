@@ -1,6 +1,6 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator
-from datetime import datetime, timedelta
+from datetime import datetime
 from datetime import date as date_type
 
 class EventBase(BaseModel):
@@ -12,14 +12,21 @@ class EventBase(BaseModel):
     resources: List[str] = Field(default_factory=list)
     rrule: Optional[str] = None
     all_day: bool = False
+    group_id: Optional[str] = None
+
+class EventCreate(EventBase):
+    # owner_id sera ajouté automatiquement par le endpoint
 
     @field_validator('start')
     @classmethod
-    def validate_start_not_past(cls, v):
-        """Vérifier que start est au minimum dans 15 minutes"""
+    def validate_start_format(cls, v):
+        """Vérifier uniquement le format de date (création).
+
+        Le cahier des charges (janvier 2026) demande d'autoriser les événements passés.
+        """
         if not v:
             return v
-            
+
         try:
             # Parser la date sans timezone
             if isinstance(v, str):
@@ -40,22 +47,9 @@ class EventBase(BaseModel):
                 start_dt = v if isinstance(v, datetime) else datetime.fromisoformat(str(v))
                 if start_dt.tzinfo:
                     start_dt = start_dt.replace(tzinfo=None)
-            
-            # Vérifier que c'est au moins dans 15 min
-            now = datetime.utcnow()
-            min_start = now + timedelta(minutes=15)
-            
-            # if start_dt < min_start:
-            #    raise ValueError('La date doit être au minimum dans 15 minutes')
         except ValueError as e:
-            if 'La date doit être' in str(e):
-                raise
             raise ValueError(f'Format de date invalide: {v}')
         return v
-
-class EventCreate(EventBase):
-    # owner_id sera ajouté automatiquement par le endpoint
-    pass
 
 class EventUpdate(BaseModel):
     title: Optional[str] = None
@@ -66,38 +60,10 @@ class EventUpdate(BaseModel):
     resources: Optional[List[str]] = None
     rrule: Optional[str] = None
     all_day: Optional[bool] = None
+    group_id: Optional[str] = None
 
-    @field_validator('start')
-    @classmethod
-    def validate_start_not_past(cls, v):
-        """Vérifier que start est au minimum dans 15 minutes (optionnel pour update)"""
-        if v is None:
-            return v
-        try:
-            if isinstance(v, str):
-                if '+' in v or v.endswith('Z'):
-                    v_clean = v.replace('Z', '+00:00')
-                    start_dt = datetime.fromisoformat(v_clean)
-                    start_dt = start_dt.replace(tzinfo=None)
-                else:
-                    if len(v) == 10:
-                        d = date_type.fromisoformat(v)
-                        start_dt = datetime(d.year, d.month, d.day)
-                    else:
-                        start_dt = datetime.fromisoformat(v)
-            else:
-                start_dt = v if isinstance(v, datetime) else datetime.fromisoformat(str(v))
-                if start_dt.tzinfo:
-                    start_dt = start_dt.replace(tzinfo=None)
-            
-            now = datetime.utcnow()
-            min_start = now + timedelta(minutes=15)
-            if start_dt < min_start:
-                raise ValueError('La date doit être au minimum dans 15 minutes')
-        except ValueError as e:
-            if 'La date doit être' in str(e):
-                raise
-        return v
+    # NOTE: Le cahier des charges (janvier 2026) demande d'autoriser la modification
+    # des événements passés pour tout le monde. Aucune contrainte temporelle ici.
 
 class Event(EventBase):
     id: str

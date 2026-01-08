@@ -2,6 +2,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import datetime
+from app.schemas_groups import GroupRead
 
 
 class TokenResponse(BaseModel):
@@ -45,6 +46,10 @@ class UserResponse(BaseModel):
     job_title: Optional[str]
     role: str
     is_active: bool
+    email_verified: bool
+    theme: str
+    group_id: Optional[str] = None
+    group: Optional[GroupRead] = None
     created_at: datetime
 
     class Config:

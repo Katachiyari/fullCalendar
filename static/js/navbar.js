@@ -35,8 +35,12 @@ function createNavbar(currentPage = 'calendar') {
         <div id="navbarMenu" class="navbar-menu">
             <div class="navbar-start">
                 <a class="navbar-item ${currentPage === 'calendar' ? 'is-active' : ''}" href="/static/index.html">
-                    <span class="icon"><i class="fas fa-home"></i></span>
-                    <span>Accueil</span>
+                    <span class="icon"><i class="fas fa-calendar-alt"></i></span>
+                    <span>Calendrier</span>
+                </a>
+                <a class="navbar-item ${currentPage === 'ansible' ? 'is-active' : ''}" href="/static/ansible.html">
+                    <span class="icon"><i class="fas fa-robot"></i></span>
+                    <span>Ansible</span>
                 </a>
             </div>
 
@@ -53,9 +57,13 @@ function createNavbar(currentPage = 'calendar') {
                             <span>Mon Profil</span>
                         </a>
                         ${user && user.role === 'ADMIN' ? `
-                            <a class="navbar-item ${currentPage === 'admin' ? 'is-active' : ''}" href="/static/admin-users.html">
+                            <a class="navbar-item ${currentPage === 'admin-users' ? 'is-active' : ''}" href="/static/admin-users.html">
                                 <span class="icon"><i class="fas fa-users-cog"></i></span>
-                                <span>Gestion Utilisateurs</span>
+                                <span>Administration - Utilisateurs</span>
+                            </a>
+                            <a class="navbar-item ${currentPage === 'admin-server' ? 'is-active' : ''}" href="/static/admin-server.html">
+                                <span class="icon"><i class="fas fa-server"></i></span>
+                                <span>Administration - Serveur</span>
                             </a>
                             <hr class="navbar-divider">
                         ` : ''}

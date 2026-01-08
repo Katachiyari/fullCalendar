@@ -1,0 +1,176 @@
+:root {
+  color-scheme: dark;
+
+  --opshub-page-bg: radial-gradient(1100px 600px at 20% 10%, rgba(0, 209, 178, 0.18), transparent 60%),
+    radial-gradient(900px 520px at 80% 0%, rgba(72, 95, 199, 0.22), transparent 55%),
+    radial-gradient(900px 520px at 70% 80%, rgba(255, 56, 96, 0.12), transparent 60%),
+    linear-gradient(180deg, var(--opshub-bg-0), var(--opshub-bg-1));
+
+  --opshub-bg-0: #070a12;
+  --opshub-bg-1: #0a1022;
+  --opshub-surface: rgba(255, 255, 255, 0.06);
+  --opshub-surface-2: rgba(255, 255, 255, 0.09);
+  --opshub-border: rgba(255, 255, 255, 0.12);
+  --opshub-text: rgba(255, 255, 255, 0.92);
+  --opshub-text-dim: rgba(255, 255, 255, 0.72);
+  --opshub-title: #fff;
+  --opshub-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --opshub-radius: 14px;
+}
+
+:root[data-theme='bright'] {
+  color-scheme: light;
+
+  --opshub-bg-0: #eef2ff;
+  --opshub-bg-1: #ffffff;
+  --opshub-surface: rgba(255, 255, 255, 0.78);
+  --opshub-surface-2: rgba(255, 255, 255, 0.92);
+  --opshub-border: rgba(15, 23, 42, 0.12);
+  --opshub-text: rgba(15, 23, 42, 0.92);
+  --opshub-text-dim: rgba(15, 23, 42, 0.68);
+  --opshub-title: rgba(15, 23, 42, 0.92);
+  --opshub-shadow: 0 10px 30px rgba(15, 23, 42, 0.10);
+
+  --opshub-page-bg: radial-gradient(1100px 600px at 20% 10%, rgba(0, 209, 178, 0.14), transparent 60%),
+    radial-gradient(900px 520px at 80% 0%, rgba(72, 95, 199, 0.14), transparent 55%),
+    radial-gradient(900px 520px at 70% 80%, rgba(255, 56, 96, 0.10), transparent 60%),
+    linear-gradient(180deg, var(--opshub-bg-0), var(--opshub-bg-1));
+}
+
+html,
+body {
+  background: var(--opshub-page-bg);
+  color: var(--opshub-text);
+  min-height: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.opshub-app {
+  min-height: 100vh;
+}
+
+.opshub-main {
+  padding-top: 2rem;
+}
+
+.opshub-container {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.opshub-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--opshub-surface-2);
+  border-bottom: 1px solid var(--opshub-border);
+  backdrop-filter: blur(14px);
+}
+
+.opshub-navbar .navbar-item,
+.opshub-navbar .navbar-link {
+  color: var(--opshub-text);
+}
+
+
+.opshub-navbar .navbar-item:hover,
+.opshub-navbar .navbar-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--opshub-title);
+}
+
+.opshub-navbar .navbar-item.is-active,
+.opshub-navbar .navbar-link.is-active {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--opshub-title);
+}
+
+.opshub-glass {
+  background: var(--opshub-surface);
+  border: 1px solid var(--opshub-border);
+  border-radius: var(--opshub-radius);
+  box-shadow: var(--opshub-shadow);
+  backdrop-filter: blur(12px);
+}
+
+/* Make Bulma boxes/cards feel more modern without changing page markup */
+.box {
+  background: var(--opshub-surface);
+  border: 1px solid var(--opshub-border);
+  border-radius: var(--opshub-radius);
+  box-shadow: var(--opshub-shadow);
+}
+
+.title,
+.subtitle {
+  color: var(--opshub-title);
+}
+
+.help,
+.label,
+.content,
+.menu-label {
+  color: var(--opshub-text-dim);
+}
+
+/* Inputs */
+.input,
+.textarea,
+.select select {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: var(--opshub-text);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.input:focus,
+.textarea:focus,
+.select select:focus {
+  border-color: rgba(0, 209, 178, 0.55);
+  box-shadow: 0 0 0 0.125em rgba(0, 209, 178, 0.18);
+}
+
+/* Tables */
+.table {
+  background: transparent;
+  color: var(--opshub-text);
+}
+
+.table thead th {
+  color: var(--opshub-text-dim);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.table td,
+.table th {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* FullCalendar (dark friendly) */
+.fc {
+  --fc-border-color: rgba(255, 255, 255, 0.12);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: rgba(255, 255, 255, 0.03);
+  --fc-today-bg-color: rgba(0, 209, 178, 0.10);
+  --fc-list-event-hover-bg-color: rgba(255, 255, 255, 0.05);
+}
+
+.fc .fc-toolbar-title {
+  color: var(--opshub-title);
+}
+
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.opshub-fade-in {
+  animation: fadeIn 0.35s ease-out;
+}
